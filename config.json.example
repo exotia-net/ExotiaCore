@@ -1,0 +1,7 @@
+{
+  "addr": "127.0.0.1",
+  "port": 3000,
+  "threads": 4,
+  "database_table": "",
+  "database_url": ""
+}

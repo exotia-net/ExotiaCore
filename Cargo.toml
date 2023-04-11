@@ -1,0 +1,32 @@
+[package]
+name = "exotia-core"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix = "0.13"
+actix-web = "4"
+actix-cors = "0.6"
+actix-web-actors = "4.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.9"
+reqwest = { version = "0.11", features = ["json"] }
+async-trait = "0.1"
+sea-orm = { version = "0.9", features = ["sqlx-postgres", "runtime-actix-native-tls", "macros"] }
+chrono = "0.4"
+utoipa = { version = "3.1", features = ["actix_extras", "chrono"] }
+utoipa-swagger-ui = { version = "3.1", features = ["actix-web"] }
