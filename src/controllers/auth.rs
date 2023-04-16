@@ -14,7 +14,6 @@ async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<crate
         .one(&data.conn)
         .await
         .ok()?;
-	println!("{:#?}", user);
     user
 }
 
