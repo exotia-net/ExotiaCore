@@ -2,13 +2,20 @@ pub mod server;
 pub mod handlers;
 pub mod controllers;
 pub mod utils;
+pub mod entities;
 
 use std::{fs::File, io::Read, fmt};
 use actix_web::{HttpResponse, http::header::ContentType, body};
 use log::warn;
 use reqwest::StatusCode;
+use sea_orm::DatabaseConnection;
 use serde::Deserialize;
 use serde_json::json;
+
+#[derive(Debug, Clone)]
+pub struct AppState {
+    pub conn: DatabaseConnection,
+}
 
 #[derive(Debug)]
 pub enum ApiError {
@@ -86,6 +93,7 @@ pub struct Config {
     pub threads: usize,
     pub database_table: String,
     pub database_url: String,
+    pub key: String,
 }
 
 impl Default for Config {
@@ -95,15 +103,39 @@ impl Default for Config {
             port: 3000,
             threads: 4,
             database_table: String::from(""),
-            database_url: String::from("")
+            database_url: String::from(""),
+            key: String::from("basic_key"),
         }
     }
 }
 
-pub fn load_config() -> Result<Config, std::io::Error> {
+pub fn get_config() -> Result<Config, std::io::Error> {
     let mut file: File = File::open("config.json")?;
     let mut data: String = String::new();
     file.read_to_string(&mut data)?;
     let json: Config = serde_json::from_str(&data)?;
     Ok(json)
+}
+
+#[allow(unused)]
+#[derive(Debug)]
+pub struct UserInfo {
+    pub uuid: String,
+    pub ip: String,
+    pub nick: String,
+}
+
+pub trait UserInfoTrait {
+    fn extract(&self) -> UserInfo;
+}
+
+impl UserInfoTrait for String {
+    fn extract(&self) -> UserInfo {
+        let val: Vec<String> = self.split('|').map(|v| v.to_owned()).collect();
+        UserInfo {
+            uuid: val[0].clone(),
+            ip: val[1].clone(),
+            nick: val[2].clone(),
+        }
+    }
 }

@@ -12,10 +12,11 @@ path = "src/lib.rs"
 name = "main"
 path = "src/main.rs"
 
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+migration = { path = "./migration" }
+
 actix = "0.13"
 actix-web = "4"
 actix-cors = "0.6"
@@ -30,3 +31,4 @@ sea-orm = { version = "0.9", features = ["sqlx-postgres", "runtime-actix-native-
 chrono = "0.4"
 utoipa = { version = "3.1", features = ["actix_extras", "chrono"] }
 utoipa-swagger-ui = { version = "3.1", features = ["actix-web"] }
+magic-crypt = "3.1"

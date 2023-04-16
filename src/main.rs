@@ -1,27 +1,37 @@
 use actix_cors::Cors;
 use actix_web::{middleware, HttpServer, App, web, HttpRequest, HttpResponse, http::header};
-use lib::{Config, load_config};
+use lib::{Config, get_config, ApiError, AppState};
 use actix_web_actors::ws;
 
 use lib::server::WebSocket;
+use sea_orm::Database;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
+use migration::{Migrator, MigratorTrait};
 
 async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, actix_web::Error> {
     ws::start(WebSocket::new(), &req, stream)
-} 
+}
 
 #[actix_web::main]
-async fn main() -> Result<(), std::io::Error> {
+async fn main() -> Result<(), ApiError> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
-    let config: Config = load_config().unwrap_or_default();
+    let config: Config = get_config().unwrap_or_default();
+    
+    let conn = Database::connect(&config.database_url).await?;
+    let state = AppState {
+        conn: conn.clone(),
+    };
+
+    Migrator::up(&conn, None).await?;
+    Migrator::status(&conn).await?;
 
     #[derive(OpenApi)]
     #[openapi(
         paths(
-            lib::controllers::hello
+            lib::controllers::auth::auth
         ),
         tags(
             (name = "ExotiaCore", description = "ExotiaCore documentation")
@@ -42,6 +52,7 @@ async fn main() -> Result<(), std::io::Error> {
         App::new()
             .wrap(middleware::Logger::default().log_target("ExotiaCore"))
             .wrap(cors)
+            .app_data(web::Data::new(state.clone()))
             .configure(lib::controllers::configure())
             .service(web::resource("/ws").route(web::get().to(websocket_handler)))
             .route("/docs", web::get().to(|| async {
@@ -56,5 +67,6 @@ async fn main() -> Result<(), std::io::Error> {
     .workers(config.threads)
     .bind((config.addr, config.port))?
     .run()
-    .await
+    .await?;
+    Ok(())
 }
