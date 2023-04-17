@@ -1,5 +1,7 @@
 use sea_orm_migration::prelude::*;
 
+use crate::m20230415_125808_users_table::Users;
+
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
@@ -18,10 +20,16 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Cosmetics::UserId).integer().not_null())
+                    .col(ColumnDef::new(Cosmetics::UserId).integer().not_null().unique_key())
                     .col(ColumnDef::new(Cosmetics::CosmeticId).string().not_null())
                     .col(ColumnDef::new(Cosmetics::CreatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))
                     .col(ColumnDef::new(Cosmetics::UpdatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))//.extra("ON UPDATE CURRENT_TIMESTAMP".to_string())
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-user-id")
+                            .from(Cosmetics::Table, Cosmetics::UserId)
+                            .to(Users::Table, Users::Id)
+                    )
                     .to_owned(),
             )
             .await

@@ -12,18 +12,34 @@ pub struct Model {
     pub first_ip: String,
     pub last_ip: String,
     pub created_at: Option<DateTime>,
-    pub updated_at: Option<DateTime>,
+    pub updated_at: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::survival_economy::Entity")]
+    #[sea_orm(has_one = "super::survival_economy::Entity")]
     SurvivalEconomy,
+    #[sea_orm(has_one = "super::cosmetics::Entity")]
+    Cosmetics,
+    #[sea_orm(has_one = "super::wallet::Entity")]
+    Wallet,
 }
 
 impl Related<super::survival_economy::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::SurvivalEconomy.def()
+    }
+}
+
+impl Related<super::cosmetics::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Cosmetics.def()
+    }
+}
+
+impl Related<super::wallet::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Wallet.def()
     }
 }
 

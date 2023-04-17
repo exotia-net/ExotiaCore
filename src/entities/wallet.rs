@@ -4,15 +4,16 @@ use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Deserialize)]
-#[sea_orm(table_name = "cosmetics")]
+#[sea_orm(table_name = "wallet")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     #[sea_orm(unique)]
     pub user_id: i32,
-    pub cosmetic_id: String,
+    pub coins: f32,
+    pub spent_coins: f32,
     pub created_at: Option<DateTime>,
-    pub updated_at: Option<DateTime>,
+    pub updated_at: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -25,11 +26,19 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Users,
+    #[sea_orm(has_many = "super::wallet_actions::Entity")]
+    WalletActions,
 }
 
 impl Related<super::users::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Users.def()
+    }
+}
+
+impl Related<super::wallet_actions::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::WalletActions.def()
     }
 }
 

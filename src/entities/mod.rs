@@ -5,3 +5,5 @@ pub mod prelude;
 pub mod cosmetics;
 pub mod survival_economy;
 pub mod users;
+pub mod wallet;
+pub mod wallet_actions;

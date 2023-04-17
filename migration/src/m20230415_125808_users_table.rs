@@ -18,11 +18,11 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Users::Uuid).string().not_null())
+                    .col(ColumnDef::new(Users::Uuid).string().not_null().unique_key())
                     .col(ColumnDef::new(Users::FirstIp).string().not_null())
                     .col(ColumnDef::new(Users::LastIp).string().not_null())
                     .col(ColumnDef::new(Users::CreatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))
-                    .col(ColumnDef::new(Users::UpdatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))//.extra("ON UPDATE CURRENT_TIMESTAMP".to_string()))
+                    .col(ColumnDef::new(Users::UpdatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))
                     .to_owned(),
             )
             .await

@@ -3,3 +3,5 @@
 pub use super::cosmetics::Entity as Cosmetics;
 pub use super::survival_economy::Entity as SurvivalEconomy;
 pub use super::users::Entity as Users;
+pub use super::wallet::Entity as Wallet;
+pub use super::wallet_actions::Entity as WalletActions;
