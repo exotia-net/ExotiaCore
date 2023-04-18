@@ -73,10 +73,13 @@ async fn main() -> Result<(), ApiError> {
     #[derive(OpenApi)]
     #[openapi(
         paths(
-            lib::controllers::auth::auth
+            lib::controllers::users::auth::auth,
+            lib::controllers::users::create::create,
         ),
         components(
-            schemas(lib::entities::users::Model)
+            schemas(lib::entities::users::Model),
+
+            schemas(lib::controllers::users::User)
         ),
         tags(
             (name = "ExotiaCore", description = "ExotiaCore documentation")
@@ -104,7 +107,7 @@ async fn main() -> Result<(), ApiError> {
             .wrap(cors)
             .wrap(middleware::Logger::default().log_target("ExotiaCore"))
             .app_data(web::Data::new(state))
-            .configure(lib::controllers::configure())
+            .configure(lib::controllers::users::configure())
             .service(web::resource("/ws").route(web::get().to(websocket_handler)))
             .route("/docs", web::get().to(|| async {
                 HttpResponse::Found()
