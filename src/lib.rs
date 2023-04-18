@@ -4,7 +4,7 @@ pub mod controllers;
 pub mod utils;
 pub mod entities;
 
-use std::{fs::File, io::Read, fmt};
+use std::{fs::File, io::Read, fmt, sync::Mutex};
 use actix_web::{HttpResponse, http::header::ContentType, body};
 use log::warn;
 use reqwest::StatusCode;
@@ -12,9 +12,12 @@ use sea_orm::DatabaseConnection;
 use serde::Deserialize;
 use serde_json::json;
 
-#[derive(Debug, Clone)]
+use entities::users;
+
+#[derive(Debug)]
 pub struct AppState {
     pub conn: DatabaseConnection,
+    pub user: Mutex<Option<users::Model>>,
 }
 
 #[derive(Debug)]

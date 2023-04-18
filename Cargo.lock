@@ -247,6 +247,54 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-web-lab"
+version = "0.19.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e9f49571dfcf49ed79c6e7a645e9554ae01925eb55fa6e3b2501ceeed24d7e7"
+dependencies = [
+ "actix-http",
+ "actix-router",
+ "actix-service",
+ "actix-utils",
+ "actix-web",
+ "actix-web-lab-derive",
+ "ahash 0.8.3",
+ "arc-swap",
+ "async-trait",
+ "bytes",
+ "bytestring",
+ "csv",
+ "derive_more",
+ "futures-core",
+ "futures-util",
+ "http",
+ "impl-more",
+ "itertools",
+ "local-channel",
+ "mediatype",
+ "mime",
+ "once_cell",
+ "pin-project-lite",
+ "regex",
+ "serde",
+ "serde_html_form",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "actix-web-lab-derive"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16294584c7794939b1e5711f28e7cae84ef30e62a520db3f9af425f85269bcd2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "actix_derive"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -336,6 +384,12 @@ checksum = "819e7219dbd41043ac279b19830f2efc897156490d7fd6ea916720117ee66311"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "arc-swap"
+version = "1.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
 
 [[package]]
 name = "arrayvec"
@@ -930,6 +984,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "csv"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b015497079b9a9d69c02ad25de6c0a6edef051ea6360a327d0bd05802ef64ad"
+dependencies = [
+ "csv-core",
+ "itoa",
+ "ryu",
+ "serde",
+]
+
+[[package]]
+name = "csv-core"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b2466559f260f48ad25fe6317b3c8dac77b5bdb5763ac7d9d6103530663bc90"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "ctor"
 version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1128,12 +1203,14 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "actix-web-actors",
+ "actix-web-lab",
  "async-trait",
  "chrono",
  "env_logger",
  "log",
  "magic-crypt",
  "migration",
+ "rand",
  "reqwest",
  "sea-orm",
  "serde",
@@ -1569,6 +1646,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "impl-more"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2697f323912b5b942f1ff43625c34895edcf3def901c11214ad92d41fa5c57da"
+
+[[package]]
 name = "indexmap"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1763,6 +1846,12 @@ checksum = "6365506850d44bff6e2fbcb5176cf63650e48bd45ef2fe2665ae1570e0f4b9ca"
 dependencies = [
  "digest 0.10.6",
 ]
+
+[[package]]
+name = "mediatype"
+version = "0.19.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fea6e62614ab2fc0faa58bb15102a0382d368f896a9fa4776592589ab55c4de7"
 
 [[package]]
 name = "memchr"
@@ -2689,6 +2778,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_html_form"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53192e38d5c88564b924dbe9b60865ecbb71b81d38c4e61c817cffd3e36ef696"
+dependencies = [
+ "form_urlencoded",
+ "indexmap",
+ "itoa",
+ "ryu",
+ "serde",
+]
+
+[[package]]
 name = "serde_json"
 version = "1.0.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3093,7 +3195,19 @@ dependencies = [
  "pin-project-lite",
  "signal-hook-registry",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.45.0",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61a573bdc87985e9d6ddeed1b3d864e8a302c847e40d647746df2f1de209d1ce"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.14",
 ]
 
 [[package]]

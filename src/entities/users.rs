@@ -2,17 +2,20 @@
 
 use sea_orm::entity::prelude::*;
 use serde::Deserialize;
+use utoipa::ToSchema;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Deserialize, ToSchema)]
 #[sea_orm(table_name = "users")]
+#[schema(title = "Users")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
+    #[sea_orm(unique)]
     pub uuid: String,
     pub first_ip: String,
     pub last_ip: String,
     pub created_at: Option<DateTime>,
-    pub updated_at: Option<DateTimeWithTimeZone>,
+    pub updated_at: Option<DateTime>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
