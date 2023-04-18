@@ -8,7 +8,7 @@ use crate::{ApiError, AppState};
 	path = "/auth/me",
 	tag = "Auth",
 	responses(
-		(status = 200, description = "Current user", body = User),
+		(status = 200, description = "Current user", body = Users),
         (status = 401, description = "You are not authorized to access this resource")
 	)
 )]
