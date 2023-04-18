@@ -6,6 +6,8 @@ use crate::{ApiError, entities::{users, prelude::Users}, AppState};
 use super::User;
 
 #[utoipa::path(
+	post,
+	path = "/auth/signUp",
 	tag = "Auth",
 	request_body(content = User, description = "User to add", content_type = "application/json"),
 	responses(
@@ -14,7 +16,7 @@ use super::User;
 		(status = 404, description = "If value is none")
 	)
 )]
-#[post("/auth/signUp")]
+// #[post("/auth/signUp")]
 pub async fn create(
 	body: web::Json<User>, 
 	data: web::Data<AppState>
@@ -29,12 +31,10 @@ pub async fn create(
 	let user_insert = Users::insert(user).exec(&data.conn).await;
 
 	return match user_insert {
-		Ok(_) => Ok(HttpResponse::Ok()
-			.content_type(ContentType::json())
-			.json(json!({ "message": "Created" }))),
+		Ok(_) => Ok(HttpResponse::Ok().finish()),
 		Err(_) => Ok(HttpResponse::Conflict()
 			.content_type(ContentType::json())
-			.json(json!({ "message": "User with that id already exists" }))),
+			.json(json!({ "message": "User with that uuid already exists" }))),
 	} 
 
 }
