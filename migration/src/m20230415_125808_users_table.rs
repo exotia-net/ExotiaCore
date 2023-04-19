@@ -19,6 +19,7 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Users::Uuid).string().not_null().unique_key())
+                    .col(ColumnDef::new(Users::Nick).string().not_null())
                     .col(ColumnDef::new(Users::FirstIp).string().not_null())
                     .col(ColumnDef::new(Users::LastIp).string().not_null())
                     .col(ColumnDef::new(Users::CreatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))
@@ -41,6 +42,7 @@ pub enum Users {
     Table,
     Id,
     Uuid,
+    Nick,
     FirstIp,
     LastIp,
     CreatedAt,

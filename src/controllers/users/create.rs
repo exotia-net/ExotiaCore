@@ -23,15 +23,20 @@ pub async fn create(
 ) -> Result<impl Responder, ApiError> {
 	let user = users::ActiveModel {
 		uuid: Set(body.uuid.clone()),
+		nick: Set(body.nick.clone()),
 		first_ip: Set(body.ip.clone()),
 		last_ip: Set(body.ip.clone()),
 		..Default::default()
 	};
+	println!("{:#?}", &user);
 
 	let user_insert = Users::insert(user).exec(&data.conn).await;
 
 	return match user_insert {
-		Ok(_) => Ok(HttpResponse::Ok().finish()),
+		Ok(v) => {
+			println!("{:#?}", v);
+			Ok(HttpResponse::Created().finish())
+		},
 		Err(_) => Ok(HttpResponse::Conflict()
 			.content_type(ContentType::json())
 			.json(json!({ "message": "User with that uuid already exists" }))),

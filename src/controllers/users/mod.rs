@@ -9,6 +9,7 @@ use utoipa::ToSchema;
 pub struct User {
     uuid: String,
     ip: String,
+    nick: String,
 }
 
 // pub fn configure() -> impl FnOnce(&mut ServiceConfig) {

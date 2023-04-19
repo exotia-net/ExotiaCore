@@ -12,6 +12,7 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(unique)]
     pub uuid: String,
+    pub nick: String,
     pub first_ip: String,
     pub last_ip: String,
     pub created_at: Option<DateTime>,
