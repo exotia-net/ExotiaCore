@@ -34,7 +34,6 @@ async fn auth_middleware(
     req: ServiceRequest,
     next: Next<impl MessageBody>,
 ) -> Result<ServiceResponse<impl MessageBody>, actix_web::Error> {
-    println!("{:#?}", req.uri());
     let token = req
         .headers()
         .get("ExotiaKey")
@@ -109,15 +108,16 @@ async fn main() -> Result<(), ApiError> {
             .wrap(middleware::Logger::default().log_target("ExotiaCore"))
             .app_data(web::Data::new(state))
             .service(
-                web::resource("/auth/me")
+                web::scope("/auth")
                     .wrap(from_fn(auth_middleware))
-                    .route(web::get().to(lib::controllers::users::auth::auth))
+                    .route("/me", web::get().to(lib::controllers::users::auth::auth))
+                    .route("/signUp", web::post().to(lib::controllers::users::create::create))
                     // .configure(lib::controllers::users::blocked())
             )
-            .service(
-                web::resource("/auth/signUp").route(web::post().to(lib::controllers::users::create::create))
-                    // .configure(lib::controllers::users::configure())
-            )
+            // .service(
+            //     web::resource("/auth/signUp").route(web::post().to(lib::controllers::users::create::create))
+            //         // .configure(lib::controllers::users::configure())
+            // )
             .service(web::resource("/ws").route(web::get().to(websocket_handler)))
             .route("/docs", web::get().to(|| async {
                 HttpResponse::Found()
