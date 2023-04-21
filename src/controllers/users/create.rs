@@ -32,14 +32,9 @@ pub async fn create(
 
 	let user_insert = Users::insert(user).exec(&data.conn).await;
 
-	return match user_insert {
-		Ok(v) => {
-			println!("{:#?}", v);
+	return user_insert.map_or_else(|_| Ok(HttpResponse::Conflict()
+		.content_type(ContentType::json())
+		.json(json!({ "message": "User with that uuid already exists" }))), |_| {
 			Ok(HttpResponse::Created().finish())
-		},
-		Err(_) => Ok(HttpResponse::Conflict()
-			.content_type(ContentType::json())
-			.json(json!({ "message": "User with that uuid already exists" }))),
-	} 
-
+		})
 }

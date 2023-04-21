@@ -105,8 +105,8 @@ impl Default for Config {
             addr: String::from("127.0.0.1"),
             port: 3000,
             threads: 4,
-            database_table: String::from(""),
-            database_url: String::from(""),
+            database_table: String::new(),
+            database_url: String::new(),
             key: String::from("basic_key"),
         }
     }
@@ -134,7 +134,7 @@ pub trait UserInfoTrait {
 
 impl UserInfoTrait for String {
     fn extract(&self) -> UserInfo {
-        let val: Vec<String> = self.split('|').map(|v| v.to_owned()).collect();
+        let val: Vec<Self> = self.split('|').map(std::borrow::ToOwned::to_owned).collect();
         UserInfo {
             uuid: val[0].clone(),
             ip: val[1].clone(),

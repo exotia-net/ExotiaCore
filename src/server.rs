@@ -13,10 +13,12 @@ pub struct WebSocket {
 }
 
 impl WebSocket {
+    #[must_use]
     pub fn new() -> Self {
         Self { hb: Instant::now() }
     }
 
+    #[allow(clippy::unused_self)]
     fn hb(&self, ctx: &mut <Self as Actor>::Context) {
         ctx.run_interval(HEARBEAT_INTERVAL, |act, ctx| {
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
@@ -28,6 +30,12 @@ impl WebSocket {
 
             ctx.ping(b"");
         });
+    }
+}
+
+impl Default for WebSocket {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

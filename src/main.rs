@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use actix_cors::Cors;
 use actix_web::{middleware, HttpServer, App, web, HttpRequest, HttpResponse, http::header, dev::{ServiceRequest, ServiceResponse}, body::MessageBody};
-use lib::{Config, get_config, ApiError, AppState, utils::token::decrypt_token, entities::{users, prelude::*}, UserInfoTrait};
+use lib::{Config, get_config, ApiError, AppState, utils::token::decrypt, entities::{users, prelude::*}, UserInfoTrait};
 use actix_web_actors::ws;
 use actix_web_lab::middleware::{Next, from_fn};
 
@@ -13,13 +13,14 @@ use utoipa_swagger_ui::SwaggerUi;
 
 use migration::{Migrator, MigratorTrait};
 
+#[allow(clippy::unused_async)]
 async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, actix_web::Error> {
     ws::start(WebSocket::new(), &req, stream)
 }
 
 async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<lib::entities::users::Model> {
     let key = get_config().ok()?.key;
-    let plain_token = decrypt_token(token, &key).ok()?;
+    let plain_token = decrypt(token, &key).ok()?;
     let user_info = plain_token.extract();
     
     Users::find()
@@ -39,11 +40,8 @@ async fn auth_middleware(
         .get("ExotiaKey")
         .and_then(|value| value.to_str().ok()).map(str::to_owned);
     
-    let token_v = match token {
-        Some(v) => v,
-        None => {
-            return Err(actix_web::error::ErrorUnauthorized(""));
-        }
+    let Some(token_v) = token else {
+        return Err(actix_web::error::ErrorUnauthorized(""));
     };
     
     let call = match validate_token(&token_v, &data).await {
@@ -59,6 +57,23 @@ async fn auth_middleware(
     call
 }
 
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        lib::controllers::users::auth::auth,
+        lib::controllers::users::create::create,
+    ),
+    components(
+        schemas(lib::entities::users::Model),
+
+        schemas(lib::controllers::users::User)
+    ),
+    tags(
+        (name = "ExotiaCore", description = "ExotiaCore documentation")
+    )
+)]
+struct ApiDoc;
+
 #[actix_web::main]
 async fn main() -> Result<(), ApiError> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
@@ -70,23 +85,6 @@ async fn main() -> Result<(), ApiError> {
     Migrator::refresh(&conn).await?;
     Migrator::up(&conn, None).await?;
     Migrator::status(&conn).await?;
-
-    #[derive(OpenApi)]
-    #[openapi(
-        paths(
-            lib::controllers::users::auth::auth,
-            lib::controllers::users::create::create,
-        ),
-        components(
-            schemas(lib::entities::users::Model),
-
-            schemas(lib::controllers::users::User)
-        ),
-        tags(
-            (name = "ExotiaCore", description = "ExotiaCore documentation")
-        )
-    )]
-    struct ApiDoc;
 
     let openapi = ApiDoc::openapi();
 

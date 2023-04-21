@@ -13,6 +13,7 @@ use crate::{ApiError, AppState};
 	)
 )]
 // #[get("/auth/me")]
+#[allow(clippy::unused_async)]
 pub async fn auth(data: web::Data<AppState>) -> Result<HttpResponse, ApiError> {
     Ok(
         HttpResponse::Ok()
