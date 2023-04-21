@@ -1,7 +1,7 @@
 pub mod auth;
 pub mod create;
 
-use actix_web::web::ServiceConfig;
+
 use serde::Deserialize;
 use utoipa::ToSchema;
 

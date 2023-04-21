@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, get, http::header::ContentType};
+use actix_web::{web, HttpResponse, http::header::ContentType};
 use serde_json::json;
 
 use crate::{ApiError, AppState};

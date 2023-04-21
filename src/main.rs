@@ -21,12 +21,12 @@ async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<lib::
     let key = get_config().ok()?.key;
     let plain_token = decrypt_token(token, &key).ok()?;
     let user_info = plain_token.extract();
-    let user = Users::find()
+    
+    Users::find()
         .filter(users::Column::Uuid.like(user_info.uuid.as_str()))
         .one(&data.conn)
         .await
-        .ok()?;
-    user
+        .ok()?
 }
 
 async fn auth_middleware(
@@ -38,20 +38,20 @@ async fn auth_middleware(
         .headers()
         .get("ExotiaKey")
         .and_then(|value| value.to_str().ok()).map(str::to_owned);
-    let token_v;
-    match token {
-        Some(v) => token_v = v,
+    
+    let token_v = match token {
+        Some(v) => v,
         None => {
             return Err(actix_web::error::ErrorUnauthorized(""));
         }
-    }
-    let call;
-    match validate_token(&token_v, &data).await {
+    };
+    
+    let call = match validate_token(&token_v, &data).await {
         Some(v) => {
             let mut user = data.user.lock().unwrap();
             *user = Some(v);
             drop(user);
-            call = next.call(req).await
+            next.call(req).await
         },
         None => return Err(actix_web::error::ErrorUnauthorized(""))
     };
