@@ -4,7 +4,7 @@ pub mod controllers;
 pub mod utils;
 pub mod entities;
 
-use std::{fs::File, io::Read, fmt, sync::Mutex};
+use std::{fs::File, io::Read, fmt, sync::{Mutex, PoisonError}};
 use actix_web::{HttpResponse, http::header::ContentType, body};
 use log::warn;
 use reqwest::StatusCode;
@@ -18,6 +18,7 @@ use entities::users;
 pub struct AppState {
     pub conn: DatabaseConnection,
     pub user: Mutex<Option<users::Model>>,
+    pub exotia_key: Mutex<Option<ExotiaKey>>,
 }
 
 #[derive(Debug)]
@@ -25,6 +26,7 @@ pub enum ApiError {
     DbError(sea_orm::DbErr),
     IoError(std::io::Error),
     SerdeError(serde_json::Error),
+    PoisonError(),
     NoneValue(&'static str),
 }
 
@@ -45,6 +47,9 @@ impl fmt::Display for ApiError {
             Self::SerdeError(v) => {
                 warn!("SerdeError: {:?}", v);
                 write!(f, "SerdeError")
+            }
+            Self::PoisonError() => {
+                write!(f, "PoisonError")
             }
             Self::NoneValue(v) => {
                 warn!("{:?} returned None", v);
@@ -72,6 +77,12 @@ impl From<serde_json::Error> for ApiError {
     }
 }
 
+impl<T> From<PoisonError<T>> for ApiError {
+    fn from(_: PoisonError<T>) -> Self {
+        Self::PoisonError()
+    }
+}
+
 impl actix_web::error::ResponseError for ApiError {
     fn error_response(&self) -> HttpResponse<body::BoxBody> {
         HttpResponse::build(self.status_code())
@@ -83,7 +94,8 @@ impl actix_web::error::ResponseError for ApiError {
         match *self {
             Self::DbError(_)
             | Self::IoError(_)
-            | Self::SerdeError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            | Self::SerdeError(_)
+            | Self::PoisonError() => StatusCode::INTERNAL_SERVER_ERROR,
             Self::NoneValue(_) => StatusCode::NOT_FOUND,
         }
     }
@@ -122,20 +134,20 @@ pub fn get_config() -> Result<Config, std::io::Error> {
 
 #[allow(unused)]
 #[derive(Debug)]
-pub struct UserInfo {
+pub struct ExotiaKey {
     pub uuid: String,
     pub ip: String,
     pub nick: String,
 }
 
 pub trait UserInfoTrait {
-    fn extract(&self) -> UserInfo;
+    fn extract(&self) -> ExotiaKey;
 }
 
 impl UserInfoTrait for String {
-    fn extract(&self) -> UserInfo {
+    fn extract(&self) -> ExotiaKey {
         let val: Vec<Self> = self.split('|').map(std::borrow::ToOwned::to_owned).collect();
-        UserInfo {
+        ExotiaKey {
             uuid: val[0].clone(),
             ip: val[1].clone(),
             nick: val[2].clone(),

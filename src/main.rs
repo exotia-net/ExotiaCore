@@ -22,9 +22,13 @@ async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<lib::
     let key = get_config().ok()?.key;
     let plain_token = decrypt(token, &key).ok()?;
     let user_info = plain_token.extract();
+    let uuid = user_info.uuid.clone();
+    let mut exotia_key = data.exotia_key.lock().unwrap();
+    *exotia_key = Some(user_info);
+    drop(exotia_key);
     
     Users::find()
-        .filter(users::Column::Uuid.like(user_info.uuid.as_str()))
+        .filter(users::Column::Uuid.like(uuid.as_str()))
         .one(&data.conn)
         .await
         .ok()?
@@ -82,7 +86,7 @@ async fn main() -> Result<(), ApiError> {
     
     let conn = Database::connect(&config.database_url).await?;
 
-    Migrator::refresh(&conn).await?;
+    // Migrator::refresh(&conn).await?;
     Migrator::up(&conn, None).await?;
     Migrator::status(&conn).await?;
 
@@ -94,6 +98,7 @@ async fn main() -> Result<(), ApiError> {
         let state = AppState {
             conn: conn.clone(),
             user: Mutex::new(None),
+            exotia_key: Mutex::new(None),
         };
 
         let cors = Cors::default()
@@ -111,6 +116,11 @@ async fn main() -> Result<(), ApiError> {
                     .route("/me", web::get().to(lib::controllers::users::auth::auth))
                     .route("/signUp", web::post().to(lib::controllers::users::create::create))
                     // .configure(lib::controllers::users::blocked())
+            )
+            .service(
+                web::scope("/api")
+                    .wrap(from_fn(auth_middleware))
+                    .route("/servers/:serverId", web::get().to(lib::controllers::servers::get::get))
             )
             // .service(
             //     web::resource("/auth/signUp").route(web::post().to(lib::controllers::users::create::create))
