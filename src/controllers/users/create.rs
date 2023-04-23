@@ -3,13 +3,11 @@ use sea_orm::{Set, EntityTrait};
 use serde_json::json;
 
 use crate::{ApiError, entities::{users, prelude::Users}, AppState};
-use super::User;
 
 #[utoipa::path(
 	post,
 	path = "/auth/signUp",
 	tag = "Auth",
-	request_body(content = User, description = "User to add", content_type = "application/json"),
 	responses(
 		(status = 201, description = "User is successfuly created"),
 		(status = 500, description = "Database error"),
@@ -18,19 +16,22 @@ use super::User;
 )]
 // #[post("/auth/signUp")]
 pub async fn create(
-	body: web::Json<User>, 
 	data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {
+	let exotia_key_guard = data.exotia_key.lock()?;
+	let user_data = &exotia_key_guard.as_ref().unwrap();
+
 	let user = users::ActiveModel {
-		uuid: Set(body.uuid.clone()),
-		nick: Set(body.nick.clone()),
-		first_ip: Set(body.ip.clone()),
-		last_ip: Set(body.ip.clone()),
+		uuid: Set(user_data.uuid.clone()),
+		nick: Set(user_data.nick.clone()),
+		first_ip: Set(user_data.ip.clone()),
+		last_ip: Set(user_data.ip.clone()),
 		..Default::default()
 	};
-	println!("{:#?}", &user);
 
 	let user_insert = Users::insert(user).exec(&data.conn).await;
+
+	drop(exotia_key_guard);
 
 	return user_insert.map_or_else(|_| Ok(HttpResponse::Conflict()
 		.content_type(ContentType::json())

@@ -69,8 +69,6 @@ async fn auth_middleware(
     ),
     components(
         schemas(lib::entities::users::Model),
-
-        schemas(lib::controllers::users::User)
     ),
     tags(
         (name = "ExotiaCore", description = "ExotiaCore documentation")
