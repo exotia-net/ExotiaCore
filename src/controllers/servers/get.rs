@@ -32,6 +32,9 @@ pub async fn get(
         user: user.clone().clone(),
     };
 
+    drop(exotia_key_guard);
+    drop(user_guard);
+
     Ok(
         HttpResponse::Ok().content_type(ContentType::json()).json(json!{ server_entity })
     )
