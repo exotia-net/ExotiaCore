@@ -124,7 +124,8 @@ async fn main() -> Result<(), ApiError> {
             .service(
                 web::scope("/api")
                     .wrap(from_fn(auth_middleware))
-                    .route("/servers/:serverId", web::get().to(lib::controllers::servers::get::get))
+                    .route("/servers/{server}", web::get().to(lib::controllers::servers::get::get))
+                    .route("/servers/{server}/economy", web::put().to(lib::controllers::servers::economy::economy))
             )
             // .service(
             //     web::resource("/auth/signUp").route(web::post().to(lib::controllers::users::create::create))

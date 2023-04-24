@@ -1,11 +1,17 @@
 pub mod get;
+pub mod economy;
 
 use serde::{Serialize, Deserialize};
 use crate::entities::users;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub enum ServerType {
     Survival,
+}
+
+#[derive(Deserialize)]
+pub struct Economy {
+    balance: i32,
 }
 
 #[derive(Serialize)]
