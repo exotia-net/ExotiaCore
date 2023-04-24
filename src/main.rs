@@ -43,7 +43,7 @@ async fn auth_middleware(
         .headers()
         .get("ExotiaKey")
         .and_then(|value| value.to_str().ok()).map(str::to_owned);
-    
+
     let Some(token_v) = token else {
         return Err(actix_web::error::ErrorUnauthorized(""));
     };
@@ -55,7 +55,13 @@ async fn auth_middleware(
             drop(user);
             next.call(req).await
         },
-        None => return Err(actix_web::error::ErrorUnauthorized(""))
+        None => {
+            if req.uri() == "/auth/signUp" {
+                next.call(req).await
+            } else {
+                return Err(actix_web::error::ErrorUnauthorized(""))
+            }
+        }
     };
     //After Request
     call

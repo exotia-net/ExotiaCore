@@ -33,9 +33,12 @@ pub async fn create(
 
 	drop(exotia_key_guard);
 
-	return user_insert.map_or_else(|_| Ok(HttpResponse::Conflict()
-		.content_type(ContentType::json())
-		.json(json!({ "message": "User with that uuid already exists" }))), |_| {
+	return match user_insert {
+		Ok(v) => {
 			Ok(HttpResponse::Created().finish())
-		})
+		},
+		Err(_) => Ok(HttpResponse::Conflict()
+			.content_type(ContentType::json())
+			.json(json!({ "message": "User with that uuid already exists" }))),
+	}
 }
