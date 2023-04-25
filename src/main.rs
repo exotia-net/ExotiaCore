@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use actix_cors::Cors;
 use actix_web::{middleware, HttpServer, App, web, HttpRequest, HttpResponse, http::header, dev::{ServiceRequest, ServiceResponse}, body::MessageBody};
-use lib::{Config, get_config, ApiError, AppState, utils::token::decrypt, entities::{users, prelude::*}, UserInfoTrait};
+use lib::{Config, get_config, ApiError, AppState, utils::token::decrypt, entities::{users, prelude::*}, UserInfoTrait, MINECRAFT_ADDRESS, MINECRAFT_PORT};
 use actix_web_actors::ws;
 use actix_web_lab::middleware::{Next, from_fn};
 
@@ -87,6 +87,11 @@ async fn main() -> Result<(), ApiError> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
     let config: Config = get_config().unwrap_or_default();
+
+    unsafe {
+        *MINECRAFT_ADDRESS = config.minecraft_address;
+        MINECRAFT_PORT = config.minecraft_port;
+    }
     
     let conn = Database::connect(&config.database_url).await?;
 

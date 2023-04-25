@@ -12,7 +12,11 @@ use sea_orm::DatabaseConnection;
 use serde::Deserialize;
 use serde_json::json;
 
+use once_cell::sync::Lazy;
 use entities::users;
+
+pub static mut MINECRAFT_ADDRESS: Lazy<String> = Lazy::new(|| "127.0.0.1".to_string());
+pub static mut MINECRAFT_PORT: u16 = 25565;
 
 #[derive(Debug)]
 pub struct AppState {
@@ -109,6 +113,8 @@ pub struct Config {
     pub database_table: String,
     pub database_url: String,
     pub key: String,
+    pub minecraft_address: String,
+    pub minecraft_port: u16,
 }
 
 impl Default for Config {
@@ -120,6 +126,8 @@ impl Default for Config {
             database_table: String::new(),
             database_url: String::new(),
             key: String::from("basic_key"),
+            minecraft_address: String::from("127.0.0.1"),
+            minecraft_port: 25565,
         }
     }
 }
