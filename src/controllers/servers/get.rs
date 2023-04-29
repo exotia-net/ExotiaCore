@@ -5,7 +5,6 @@ use sea_orm::{EntityTrait, QueryFilter, ColumnTrait};
 use serde_json::json;
 
 use crate::{ApiError, AppState, entities::{prelude::SurvivalEconomy, survival_economy}};
-use crate::controllers::servers::ServerEntity;
 use super::ServerType;
 
 pub async fn get(
@@ -25,14 +24,9 @@ pub async fn get(
         }
     };
 
-    let server_entity = ServerEntity {
-        server: serde_json::Value::String(serde_json::to_string(&server?)?),
-        user: user.clone().clone(),
-    };
-
     drop(user_guard);
 
     Ok(
-        HttpResponse::Ok().content_type(ContentType::json()).json(json!{ server_entity })
+        HttpResponse::Ok().content_type(ContentType::json()).json(json!{ server? })
     )
 }
