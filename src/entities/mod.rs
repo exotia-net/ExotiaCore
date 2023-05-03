@@ -3,6 +3,7 @@
 pub mod prelude;
 
 pub mod cosmetics;
+pub mod servers;
 pub mod survival_economy;
 pub mod users;
 pub mod wallet;
