@@ -7,6 +7,14 @@ use serde_json::json;
 use crate::{ApiError, AppState, entities::{prelude::SurvivalEconomy, survival_economy}};
 use super::ServerType;
 
+#[utoipa::path(
+    get,
+    path = "/api/servers/{server}",
+    tag = "Servers",
+    responses(
+        (status = 200, description = "")
+    )
+)]
 pub async fn get(
     path: web::Path<ServerType>, 
     data: web::Data<AppState>

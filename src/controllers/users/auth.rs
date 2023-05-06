@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, http::header::ContentType};
+use actix_web::{web, HttpResponse, http::header::ContentType, get};
 use serde_json::json;
 
 use crate::{ApiError, AppState};
@@ -12,7 +12,7 @@ use crate::{ApiError, AppState};
         (status = 401, description = "You are not authorized to access this resource")
 	)
 )]
-// #[get("/auth/me")]
+// #[get("/me")]
 #[allow(clippy::unused_async)]
 pub async fn auth(data: web::Data<AppState>) -> Result<HttpResponse, ApiError> {
     Ok(

@@ -5,18 +5,21 @@ pub mod utils;
 pub mod entities;
 
 use std::{fs::File, io::Read, fmt, sync::{Mutex, PoisonError}};
-use actix_web::{HttpResponse, http::header::ContentType, body};
+use actix_web::{HttpResponse, http::header::ContentType, body::{self, MessageBody}, web, dev::{ServiceRequest, ServiceResponse}};
+use actix_web_lab::middleware::Next;
 use log::warn;
 use reqwest::StatusCode;
-use sea_orm::DatabaseConnection;
+use sea_orm::{DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter};
 use serde::Deserialize;
 use serde_json::json;
 
 use once_cell::sync::Lazy;
-use entities::users;
+use entities::{users, prelude::Users};
+use utils::token::decrypt;
 
 pub static mut MINECRAFT_ADDRESS: Lazy<String> = Lazy::new(|| "127.0.0.1".to_string());
 pub static mut MINECRAFT_PORT: u16 = 25565;
+pub static mut DEFAULT_AUTH: Lazy<String> = Lazy::new(|| "00000000-0000-0000-0000-000000000000|0.0.0.0|0".to_string());
 
 #[derive(Debug)]
 pub struct AppState {
@@ -162,3 +165,54 @@ impl UserInfoTrait for String {
         }
     }
 }
+
+async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<entities::users::Model> {
+    let key = get_config().ok()?.key;
+    let plain_token = decrypt(token, &key).ok()?;
+    let user_info = plain_token.extract();
+    let uuid = user_info.uuid.clone();
+    let mut exotia_key = data.exotia_key.lock().unwrap();
+    *exotia_key = Some(user_info);
+    drop(exotia_key);
+    
+    Users::find()
+        .filter(users::Column::Uuid.like(uuid.as_str()))
+        .one(&data.conn)
+        .await
+        .ok()?
+}
+
+pub async fn auth_middleware(
+    data: web::Data<AppState>,
+    req: ServiceRequest,
+    next: Next<impl MessageBody>,
+) -> Result<ServiceResponse<impl MessageBody>, actix_web::Error> {
+    let token = req
+        .headers()
+        .get("ExotiaKey")
+        .and_then(|value| value.to_str().ok()).map(str::to_owned);
+
+    let Some(token_v) = token else {
+        return Err(actix_web::error::ErrorUnauthorized(""));
+    };
+    
+    let call = match validate_token(&token_v, &data).await {
+        Some(v) => {
+            let mut user = data.user.lock().unwrap();
+            *user = Some(v);
+            drop(user);
+            next.call(req).await
+        },
+        None => {
+            if req.uri() == "/auth/signUp" {
+                next.call(req).await
+            } else {
+                return Err(actix_web::error::ErrorUnauthorized(""))
+            }
+        }
+    };
+    //After Request
+    call
+}
+
+pub fn get_auth_key() -> &'static str { unsafe { DEFAULT_AUTH.as_str() } }

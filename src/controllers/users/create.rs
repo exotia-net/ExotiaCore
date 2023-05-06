@@ -1,4 +1,4 @@
-use actix_web::{Responder, web, HttpResponse, http::header::ContentType};
+use actix_web::{Responder, web, HttpResponse, http::header::ContentType, post};
 use sea_orm::{Set, EntityTrait};
 use serde_json::json;
 
@@ -16,7 +16,7 @@ use crate::entities::prelude::{Wallet, SurvivalEconomy};
 		(status = 404, description = "If value is none")
 	)
 )]
-// #[post("/auth/signUp")]
+// #[post("/signUp")]
 pub async fn create(
 	data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {
