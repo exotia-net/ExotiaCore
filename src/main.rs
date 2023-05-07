@@ -14,7 +14,7 @@ use migration::{Migrator, MigratorTrait};
 
 #[allow(clippy::unused_async)]
 async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, actix_web::Error> {
-    ws::start(WebSocket::new(), &req, stream)
+    ws::start(WebSocket::new(req.clone()), &req, stream)
 }
 
 #[derive(OpenApi)]
@@ -43,7 +43,7 @@ async fn main() -> Result<(), ApiError> {
         MINECRAFT_PORT = config.minecraft_port;
         *DEFAULT_AUTH = encrypt(&DEFAULT_AUTH, &config.key); 
     }
-    
+
     let conn = Database::connect(&config.database_url).await?;
 
     // Migrator::refresh(&conn).await?;

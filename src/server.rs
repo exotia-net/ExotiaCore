@@ -1,6 +1,7 @@
 use std::time::{Duration, Instant};
 
 use actix::prelude::*;
+use actix_web::HttpRequest;
 use actix_web_actors::ws;
 
 use crate::handlers::handle_command;
@@ -10,12 +11,16 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(15);
 
 pub struct WebSocket {
     hb: Instant,
+    req: HttpRequest
 }
 
 impl WebSocket {
     #[must_use]
-    pub fn new() -> Self {
-        Self { hb: Instant::now() }
+    pub fn new(req: HttpRequest) -> Self {
+        Self {
+            hb: Instant::now(),
+            req
+        }
     }
 
     #[allow(clippy::unused_self)]
@@ -32,13 +37,6 @@ impl WebSocket {
         });
     }
 }
-
-impl Default for WebSocket {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 
 impl Actor for WebSocket {
     type Context = ws::WebsocketContext<Self>;
@@ -65,10 +63,11 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                 if text.len() == 0 {
                     return;
                 }
+                let text = text.replace("|", " ");
                 let command: Vec<&str> = text.split_whitespace().collect();
                 let cmd = command[0];
                 let args = &command[1..].to_vec();
-                let res = handle_command(cmd, args.clone());
+                let res = handle_command(cmd, args.clone(), &self.req);
                 log::info!("Text message: {:?} resulted in {:?}", text, res);
                 ctx.text(res);
             },
