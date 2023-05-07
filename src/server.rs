@@ -1,6 +1,7 @@
-use std::time::{Duration, Instant};
+use std::{time::{Duration, Instant}, sync::{Arc, Mutex}};
 
 use actix::prelude::*;
+use actix_web::HttpRequest;
 use actix_web_actors::ws;
 
 use crate::handlers::handle_command;
@@ -10,12 +11,16 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(15);
 
 pub struct WebSocket {
     hb: Instant,
+    req: HttpRequest
 }
 
 impl WebSocket {
     #[must_use]
-    pub fn new() -> Self {
-        Self { hb: Instant::now() }
+    pub fn new(req: HttpRequest) -> Self {
+        Self {
+            hb: Instant::now(),
+            req
+        }
     }
 
     #[allow(clippy::unused_self)]
@@ -33,13 +38,6 @@ impl WebSocket {
     }
 }
 
-impl Default for WebSocket {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-
 impl Actor for WebSocket {
     type Context = ws::WebsocketContext<Self>;
 
@@ -48,7 +46,6 @@ impl Actor for WebSocket {
         self.hb(ctx);
     }
 }
-
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
     fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
@@ -65,12 +62,22 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                 if text.len() == 0 {
                     return;
                 }
-                let command: Vec<&str> = text.split_whitespace().collect();
-                let cmd = command[0];
-                let args = &command[1..].to_vec();
-                let res = handle_command(cmd, args.clone());
-                log::info!("Text message: {:?} resulted in {:?}", text, res);
-                ctx.text(res);
+                let text = text.replace("|", " ");
+                let command: Vec<String> = text.split_whitespace().map(|v| v.to_owned()).collect();
+                let cmd = command.get(0).unwrap().clone();
+                let args = command[1..].to_vec();
+                let res: Arc<Mutex<String>> = Arc::new(Mutex::new(String::new()));
+                let request = self.req.clone();
+                async move {
+                    let mut res_guard = res.lock().unwrap();
+                    *res_guard = handle_command(cmd, args.clone(), request).await.to_string();
+                    drop(res_guard);
+                    res
+                }.into_actor(self).map(move |res, _, ctx| {
+                    let res_ref = res.lock().unwrap();
+                    log::info!("Text message: {:?} resulted in {:?}", text, res_ref);
+                    ctx.text(&**res_ref);
+                }).wait(ctx);
             },
             Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
             Ok(ws::Message::Close(reason)) => {

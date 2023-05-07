@@ -1,4 +1,4 @@
-use actix_web::{Responder, web, HttpResponse};
+use actix_web::{Responder, web, HttpResponse, HttpRequest};
 use sea_orm::{EntityTrait, QueryFilter, ColumnTrait, Set, ActiveModelTrait};
 
 use crate::entities::survival_economy;
@@ -11,6 +11,7 @@ use super::{Economy, ServerType};
 	path = "/api/servers/:server/economy"
 )]
 pub async fn economy(
+	req: HttpRequest,
 	path: web::Path<ServerType>,
 	body: web::Json<Economy>,
 	data: web::Data<AppState>
@@ -18,18 +19,7 @@ pub async fn economy(
 	let user_guard = data.user.lock()?;
 	let user = &user_guard.as_ref().unwrap();
 
-    match path.into_inner() {
-        ServerType::Survival => {
-            let mut server: survival_economy::ActiveModel = SurvivalEconomy::find()
-                .filter(survival_economy::Column::UserId.eq(user.id))
-                .one(&data.conn)
-                .await?
-                .ok_or(ApiError::NoneValue("SurvivalEconomy User"))?.into();
-
-				server.balance = Set(body.balance);
-				server.update(&data.conn).await?;
-        }
-    };
+	crate::handlers::economy::economy(path.into_inner(), &req, &vec![user.uuid.clone(), body.balance.to_string()]).await;
 
 	drop(user_guard);
 	Ok(

@@ -33,6 +33,7 @@ pub enum ApiError {
     DbError(sea_orm::DbErr),
     IoError(std::io::Error),
     SerdeError(serde_json::Error),
+    ParseIntError(std::num::ParseIntError),
     PoisonError(),
     NoneValue(&'static str),
 }
@@ -54,6 +55,10 @@ impl fmt::Display for ApiError {
             Self::SerdeError(v) => {
                 warn!("SerdeError: {:?}", v);
                 write!(f, "SerdeError")
+            }
+            Self::ParseIntError(v) => {
+                warn!("ParseIntError: {:?}", v);
+                write!(f, "ParseIntError")
             }
             Self::PoisonError() => {
                 write!(f, "PoisonError")
@@ -84,6 +89,12 @@ impl From<serde_json::Error> for ApiError {
     }
 }
 
+impl From<std::num::ParseIntError> for ApiError {
+    fn from(value: std::num::ParseIntError) -> Self {
+        Self::ParseIntError(value)
+    }
+}
+
 impl<T> From<PoisonError<T>> for ApiError {
     fn from(_: PoisonError<T>) -> Self {
         Self::PoisonError()
@@ -102,7 +113,8 @@ impl actix_web::error::ResponseError for ApiError {
             Self::DbError(_)
             | Self::IoError(_)
             | Self::SerdeError(_)
-            | Self::PoisonError() => StatusCode::INTERNAL_SERVER_ERROR,
+            | Self::PoisonError()
+            | Self::ParseIntError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::NoneValue(_) => StatusCode::NOT_FOUND,
         }
     }
