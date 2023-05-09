@@ -1,4 +1,4 @@
-use actix_web::{Responder, web, HttpResponse, http::header::ContentType, post};
+use actix_web::{Responder, web, HttpResponse, http::header::ContentType};
 use sea_orm::{Set, EntityTrait};
 use serde_json::json;
 
