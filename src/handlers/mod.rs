@@ -1,5 +1,4 @@
 use actix_web::HttpRequest;
-
 use crate::controllers::servers::ServerType;
 
 pub mod get_online;
