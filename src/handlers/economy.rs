@@ -30,5 +30,5 @@ pub async fn economy(server_type: ServerType, req: &HttpRequest, args: &Vec<Stri
 				server_db.update(&data.conn).await?;
         }
     };
-	Ok(format!("Created"))
+	Ok(String::new())
 }

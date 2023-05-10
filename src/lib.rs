@@ -5,10 +5,9 @@ pub mod utils;
 pub mod entities;
 
 use std::{fs::File, io::Read, fmt, sync::{Mutex, PoisonError}};
-use actix_web::{HttpResponse, http::header::ContentType, body::{self, MessageBody}, web, dev::{ServiceRequest, ServiceResponse}};
+use actix_web::{HttpResponse, http::{header::ContentType, StatusCode}, body::{self, MessageBody}, web, dev::{ServiceRequest, ServiceResponse}};
 use actix_web_lab::middleware::Next;
 use log::warn;
-use reqwest::StatusCode;
 use sea_orm::{DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter};
 use serde::Deserialize;
 use serde_json::json;
@@ -36,6 +35,19 @@ pub enum ApiError {
     ParseIntError(std::num::ParseIntError),
     PoisonError(),
     NoneValue(&'static str),
+}
+
+impl ApiError {
+    fn code(&self) -> u16 {
+        match *self {
+            Self::DbError(_)
+            | Self::IoError(_)
+            | Self::SerdeError(_)
+            | Self::PoisonError()
+            | Self::ParseIntError(_) => StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            Self::NoneValue(_) => StatusCode::NOT_FOUND.as_u16(),
+        }
+    }
 }
 
 impl fmt::Display for ApiError {
@@ -108,7 +120,7 @@ impl actix_web::error::ResponseError for ApiError {
             .json(json!({ "message": self.to_string() }))
     }
 
-    fn status_code(&self) -> reqwest::StatusCode {
+    fn status_code(&self) -> StatusCode {
         match *self {
             Self::DbError(_)
             | Self::IoError(_)
