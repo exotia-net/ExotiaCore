@@ -74,6 +74,7 @@ async fn main() -> Result<(), ApiError> {
             .service(
                 web::scope("/api")
                     .configure(lib::controllers::servers::configure())
+                    .configure(lib::controllers::wallet::configure())
             )
             .service(
                 web::resource("/ws")

@@ -24,7 +24,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Wallet::Coins).float().not_null())
                     .col(ColumnDef::new(Wallet::SpentCoins).float().not_null())
                     .col(ColumnDef::new(Wallet::CreatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))
-                    .col(ColumnDef::new(Wallet::UpdatedAt).date_time().timestamp_with_time_zone())
+                    .col(ColumnDef::new(Wallet::UpdatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-user-id")
