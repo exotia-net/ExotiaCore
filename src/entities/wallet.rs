@@ -13,7 +13,7 @@ pub struct Model {
     pub coins: f32,
     pub spent_coins: f32,
     pub created_at: Option<DateTime>,
-    pub updated_at: Option<DateTimeWithTimeZone>,
+    pub updated_at: Option<DateTime>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
