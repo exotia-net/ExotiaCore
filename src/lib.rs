@@ -33,6 +33,7 @@ pub enum ApiError {
     IoError(std::io::Error),
     SerdeError(serde_json::Error),
     ParseIntError(std::num::ParseIntError),
+    ParseFloatError(std::num::ParseFloatError),
     PoisonError(),
     NoneValue(&'static str),
 }
@@ -44,7 +45,8 @@ impl ApiError {
             | Self::IoError(_)
             | Self::SerdeError(_)
             | Self::PoisonError()
-            | Self::ParseIntError(_) => StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            | Self::ParseIntError(_)
+            | Self::ParseFloatError(_) => StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
             Self::NoneValue(_) => StatusCode::NOT_FOUND.as_u16(),
         }
     }
@@ -71,6 +73,10 @@ impl fmt::Display for ApiError {
             Self::ParseIntError(v) => {
                 warn!("ParseIntError: {:?}", v);
                 write!(f, "ParseIntError")
+            }
+            Self::ParseFloatError(v) => {
+                warn!("ParseFloatError: {:?}", v);
+                write!(f, "ParseFloatError")
             }
             Self::PoisonError() => {
                 write!(f, "PoisonError")
@@ -107,6 +113,12 @@ impl From<std::num::ParseIntError> for ApiError {
     }
 }
 
+impl From<std::num::ParseFloatError> for ApiError {
+    fn from(value: std::num::ParseFloatError) -> Self {
+        Self::ParseFloatError(value)
+    }
+}
+
 impl<T> From<PoisonError<T>> for ApiError {
     fn from(_: PoisonError<T>) -> Self {
         Self::PoisonError()
@@ -126,7 +138,8 @@ impl actix_web::error::ResponseError for ApiError {
             | Self::IoError(_)
             | Self::SerdeError(_)
             | Self::PoisonError()
-            | Self::ParseIntError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            | Self::ParseIntError(_)
+            | Self::ParseFloatError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::NoneValue(_) => StatusCode::NOT_FOUND,
         }
     }
