@@ -3,6 +3,7 @@ use crate::{controllers::servers::ServerType, ApiError};
 
 pub mod get_online;
 pub mod economy;
+pub mod get_wallet;
 
 #[must_use]
 pub async fn handle_command(cmd: String, kwargs: Vec<String>, req: HttpRequest) -> Result<String, ApiError> {
@@ -13,6 +14,7 @@ pub async fn handle_command(cmd: String, kwargs: Vec<String>, req: HttpRequest) 
 		"/public/servers" => todo!(),
 		"/public/cosmetics" => todo!(),
 		"/servers/Survival/economy" => economy::economy(ServerType::Survival, &req, &args).await,
+		"/wallet" => get_wallet::get_wallet(&req, &args).await,
 		&_ => Ok(String::new())
 	}
 }
