@@ -85,8 +85,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                 }
                 let text = text.replace("|", " ");
                 let command: Vec<String> = text.split_whitespace().map(|v| v.to_owned()).collect();
-                let cmd = command.get(0).unwrap().clone();
-                let args = command[1..].to_vec();
+                let cmd: (String, String) = (command[0].clone(), command[1].clone());
+                let args = command[2..].to_vec();
                 let res: Arc<Mutex<ResponseBody>> = Arc::new(Mutex::new(ResponseBody::new()));
                 let request = self.req.clone();
                 async move {
