@@ -4,6 +4,7 @@ use actix::prelude::*;
 use actix_web::{HttpRequest, http::StatusCode};
 use actix_web_actors::ws;
 use serde::Serialize;
+use regex::Regex;
 
 use crate::handlers::handle_command;
 
@@ -20,6 +21,8 @@ struct ResponseBody {
     code: u16,
     message: String,
     data: Option<String>,
+    endpoint: String,
+    uuid: Option<String>,
 }
 
 impl ResponseBody {
@@ -28,6 +31,8 @@ impl ResponseBody {
             code: StatusCode::OK.as_u16(),
             message: String::new(),
             data: None,
+            endpoint: String::new(),
+            uuid: None,
         }
     }
     fn to_string(&self) -> String {
@@ -90,7 +95,14 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                 let res: Arc<Mutex<ResponseBody>> = Arc::new(Mutex::new(ResponseBody::new()));
                 let request = self.req.clone();
                 async move {
-                    let res_command = handle_command(cmd, args.clone(), request).await;
+                    let res_command = handle_command(cmd.clone(), args.clone(), request).await;
+
+                    let re = Regex::new(r"^[0-9a-f]{8}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{12}$").unwrap();
+                    let uuid = args.get(0);
+                    let uuid = match uuid {
+                        Some(v) => v.clone().to_string(),
+                        None => String::new()
+                    };
 
                     let res_command = match res_command {
                         Ok(v) => {
@@ -102,6 +114,12 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                                 code: StatusCode::OK.as_u16(),
                                 message: String::from("Ok"),
                                 data: val,
+                                endpoint: cmd.1.clone(),
+                                uuid: if re.is_match(&uuid) {
+                                    Some(uuid.clone())
+                                } else {
+                                    None
+                                }
                             }
                         },
                         Err(e) => {
@@ -109,6 +127,12 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                                 code: e.code(),
                                 message: e.to_string(),
                                 data: None,
+                                endpoint: cmd.1.clone(),
+                                uuid: if re.is_match(&uuid) {
+                                    Some(uuid.clone())
+                                } else {
+                                    None
+                                }
                             }
                         }
                     };
