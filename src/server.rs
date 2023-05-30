@@ -114,7 +114,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                                 code: StatusCode::OK.as_u16(),
                                 message: String::from("Ok"),
                                 data: val,
-                                endpoint: cmd.1.clone(),
+                                endpoint: format!("{} {}", cmd.0, cmd.1.clone()),
                                 uuid: if re.is_match(&uuid) {
                                     Some(uuid.clone())
                                 } else {
@@ -127,7 +127,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                                 code: e.code(),
                                 message: e.to_string(),
                                 data: None,
-                                endpoint: cmd.1.clone(),
+                                endpoint: format!("{} {}", cmd.0, cmd.1.clone()),
                                 uuid: if re.is_match(&uuid) {
                                     Some(uuid.clone())
                                 } else {
