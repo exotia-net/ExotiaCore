@@ -31,6 +31,7 @@ pub struct AppState {
 pub enum ApiError {
     DbError(sea_orm::DbErr),
     IoError(std::io::Error),
+    UuidError(uuid::Error),
     SerdeError(serde_json::Error),
     ParseIntError(std::num::ParseIntError),
     ParseFloatError(std::num::ParseFloatError),
@@ -43,6 +44,7 @@ impl ApiError {
         match *self {
             Self::DbError(_)
             | Self::IoError(_)
+            | Self::UuidError(_)
             | Self::SerdeError(_)
             | Self::PoisonError()
             | Self::ParseIntError(_)
@@ -65,6 +67,10 @@ impl fmt::Display for ApiError {
             Self::IoError(v) => {
                 warn!("IoError: {:?}", v);
                 write!(f, "IoError")
+            }
+            Self::UuidError(v) => {
+                warn!("UuidError: {:?}", v);
+                write!(f, "UuidError")
             }
             Self::SerdeError(v) => {
                 warn!("SerdeError: {:?}", v);
@@ -98,6 +104,12 @@ impl From<sea_orm::DbErr> for ApiError {
 impl From<std::io::Error> for ApiError {
     fn from(value: std::io::Error) -> Self {
         Self::IoError(value)
+    }
+}
+
+impl From<uuid::Error> for ApiError {
+    fn from(value: uuid::Error) -> Self {
+        Self::UuidError(value)
     }
 }
 
@@ -136,6 +148,7 @@ impl actix_web::error::ResponseError for ApiError {
         match *self {
             Self::DbError(_)
             | Self::IoError(_)
+            | Self::UuidError(_)
             | Self::SerdeError(_)
             | Self::PoisonError()
             | Self::ParseIntError(_)

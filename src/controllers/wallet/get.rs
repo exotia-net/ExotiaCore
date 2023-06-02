@@ -22,7 +22,7 @@ pub async fn get(
     let user_guard = data.user.lock()?;
     let user = &user_guard.as_ref().unwrap();
 
-	let res = crate::handlers::get_wallet::get_wallet(&req, &vec![user.uuid.clone()]).await?;
+	let res = crate::handlers::get_wallet::get_wallet(&req, &vec![user.uuid.to_string()]).await?;
 	let res: serde_json::Value = serde_json::from_str(&res)?;
 
 	Ok(

@@ -26,7 +26,7 @@ pub async fn buy(
     let user_guard = data.user.lock()?;
     let user = &user_guard.as_ref().unwrap();
 
-	let res = crate::handlers::wallet_buy::wallet_buy(&req, &vec![user.uuid.clone(), body.cost.to_string()]).await?;
+	let res = crate::handlers::wallet_buy::wallet_buy(&req, &vec![user.uuid.to_string(), body.cost.to_string()]).await?;
 
 	Ok(
 		HttpResponse::Ok().json(json!{ res })

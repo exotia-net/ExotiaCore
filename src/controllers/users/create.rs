@@ -1,6 +1,7 @@
 use actix_web::{Responder, web, HttpResponse, http::header::ContentType};
 use sea_orm::{Set, EntityTrait};
 use serde_json::json;
+use uuid::Uuid;
 
 use crate::{ApiError, entities::{users, prelude::Users, survival_economy, wallet}, AppState};
 
@@ -24,7 +25,7 @@ pub async fn create(
 	let user_data = &exotia_key_guard.as_ref().unwrap();
 
 	let user = users::ActiveModel {
-		uuid: Set(user_data.uuid.clone()),
+		uuid: Set(Uuid::parse_str(&user_data.uuid)?),
 		nick: Set(user_data.nick.clone()),
 		first_ip: Set(user_data.ip.clone()),
 		last_ip: Set(user_data.ip.clone()),
