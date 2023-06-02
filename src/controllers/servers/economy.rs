@@ -24,7 +24,7 @@ pub async fn economy(
 	let user_guard = data.user.lock()?;
 	let user = &user_guard.as_ref().unwrap();
 
-	crate::handlers::economy::economy(path.into_inner(), &req, &vec![user.uuid.to_string(), body.balance.to_string()]).await?;
+	crate::handlers::servers::economy(path.into_inner(), &req, &vec![user.uuid.to_string(), body.balance.to_string()]).await?;
 
 	drop(user_guard);
 	Ok(

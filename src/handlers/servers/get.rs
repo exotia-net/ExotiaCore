@@ -16,7 +16,7 @@ use crate::{controllers::servers::ServerType, ApiError, AppState, entities::{use
 		(status = 500, description = "Database error"),
     )
 )]
-pub async fn get_economy(server_type: ServerType, req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
+pub async fn get(server_type: ServerType, req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
 	let data: &Data<AppState> = req.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?;
 
     let user = users::Entity::find()

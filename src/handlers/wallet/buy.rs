@@ -1,22 +1,25 @@
 use actix_web::{HttpRequest, web::Data};
-use sea_orm::{EntityTrait, ColumnTrait, QueryFilter};
+use sea_orm::{EntityTrait, QueryFilter, ColumnTrait, Set, ActiveModelTrait};
 
-use crate::{ApiError, AppState, entities::{users, wallet}};
+use crate::{ApiError, entities::{users, wallet}, AppState};
 
-/// Returns someones wallet
+/// Removes money from user
 #[utoipa::path(
-    get,
+    post,
     path = "/wallet",
     tag = "Wallet (Websocket)",
-    request_body(content = String, description = "GET /wallet {uuid}", content_type = "text/plain"),
+    request_body(content = String, description = "POST /wallet {uuid} {balance}", content_type = "text/plain"),
     responses(
-        (status = 200, description = "Requested wallet", body = lib::entities::wallet::Model),
+        (status = 200, description = "Updated wallet", body = lib::entities::wallet::Model),
         (status = 401, description = "You are not authorized to access this resource"),
 		(status = 404, description = "If value is none"),
 		(status = 500, description = "Database error"),
     )
 )]
-pub async fn get_wallet(req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
+pub async fn buy(
+	req: &HttpRequest,
+	args: &Vec<String>,
+) -> Result<String, ApiError> {
 	let data: &Data<AppState> = req.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?;
 
     let user = users::Entity::find()
@@ -31,5 +34,11 @@ pub async fn get_wallet(req: &HttpRequest, args: &Vec<String>) -> Result<String,
 		.await?
 		.ok_or(ApiError::NoneValue("Wallet"))?;
 
-	Ok(serde_json::to_string(&wallet_db)?)
+	let mut wallet_db: wallet::ActiveModel = wallet_db.into();
+
+	wallet_db.coins = Set(args.get(1).ok_or(ApiError::NoneValue("Coins"))?.parse::<f32>()?);
+
+	wallet_db.update(&data.conn).await?;
+
+	Ok(format!("Updated"))
 }

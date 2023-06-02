@@ -36,15 +36,15 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         lib::controllers::wallet::buy::buy,
 
         // Servers
-        lib::handlers::economy::economy,
-        lib::handlers::get_economy::get_economy,
+        lib::handlers::servers::economy::economy,
+        lib::handlers::servers::get::get,
 
         // Wallet (WebSocket)
-        lib::handlers::wallet_buy::wallet_buy,
-        lib::handlers::get_wallet::get_wallet,
+        lib::handlers::wallet::buy::buy,
+        lib::handlers::wallet::get::get,
 
         // Public
-        lib::handlers::get_online::get_online,
+        lib::handlers::public::get_online::get_online,
     ),
     components(
         // Users
