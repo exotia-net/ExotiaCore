@@ -3,6 +3,18 @@ use serde_json::json;
 
 use crate::{ApiError, AppState};
 
+/// Returns someones wallet
+#[utoipa::path(
+    get,
+    path = "/api/wallet",
+    tag = "Wallet",
+    responses(
+        (status = 200, description = "Requested wallet", body = lib::entities::wallet::Model),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
+    )
+)]
 pub async fn get(
 	req: HttpRequest,
 	data: web::Data<AppState>,

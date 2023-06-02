@@ -17,14 +17,49 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
     ws::start(WebSocket::new(req.clone()), &req, stream)
 }
 
+// This just looks bad
+// But it works ¯\_(ツ)_/¯
 #[derive(OpenApi)]
 #[openapi(
     paths(
+        // Users
         lib::controllers::users::auth::auth,
         lib::controllers::users::create::create,
+        lib::controllers::users::update::update,
+
+        // Servers
+        lib::controllers::servers::get::get,
+        lib::controllers::servers::economy::economy,
+
+        // Wallet
+        lib::controllers::wallet::get::get,
+        lib::controllers::wallet::buy::buy,
+
+        // Servers
+        lib::handlers::economy::economy,
+        lib::handlers::get_economy::get_economy,
+
+        // Wallet (WebSocket)
+        lib::handlers::wallet_buy::wallet_buy,
+        lib::handlers::get_wallet::get_wallet,
+
+        // Public
+        lib::handlers::get_online::get_online,
     ),
     components(
+        // Users
+        schemas(lib::controllers::users::UserEntity),
+
+        // Servers
+        schemas(lib::controllers::servers::Economy),
+
+        // Wallet
+        schemas(lib::controllers::wallet::WalletBuy),
+
+        // Entities
         schemas(lib::entities::users::Model),
+        schemas(lib::entities::servers::Model),
+        schemas(lib::entities::wallet::Model),
     ),
     tags(
         (name = "ExotiaCore", description = "ExotiaCore documentation")

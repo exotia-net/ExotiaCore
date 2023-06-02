@@ -1,6 +1,7 @@
 use actix_web::{web::{ServiceConfig, self}, guard};
 use actix_web_lab::middleware::from_fn;
 use serde::Deserialize;
+use utoipa::ToSchema;
 
 use crate::{get_auth_key, auth_middleware};
 
@@ -8,7 +9,7 @@ pub mod auth;
 pub mod create;
 pub mod update;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct UserEntity {
     pub uuid: String,
     pub nick: String,

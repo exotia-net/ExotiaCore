@@ -2,9 +2,18 @@ use actix_web::{Responder, web, HttpResponse, HttpRequest};
 use crate::{ApiError, AppState};
 use super::{Economy, ServerType};
 
+/// Updates user economy on server
 #[utoipa::path(
-	put,
-	path = "/api/servers/:server/economy"
+    put,
+    path = "/api/servers/{server}/economy",
+    tag = "Servers",
+    request_body(content = Economy, description = "New balance", content_type = "application/json"),
+    responses(
+        (status = 200, description = "Succesfully updated economy"),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
+    )
 )]
 pub async fn economy(
 	req: HttpRequest,

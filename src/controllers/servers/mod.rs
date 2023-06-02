@@ -4,6 +4,7 @@ pub mod economy;
 use actix_web::web::{ServiceConfig, self};
 use actix_web_lab::middleware::from_fn;
 use serde::Deserialize;
+use utoipa::ToSchema;
 
 use crate::auth_middleware;
 
@@ -12,7 +13,7 @@ pub enum ServerType {
     Survival,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct Economy {
     balance: i32,
 }

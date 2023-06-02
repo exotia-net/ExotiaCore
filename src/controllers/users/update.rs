@@ -6,6 +6,19 @@ use crate::{ApiError, AppState};
 
 use super::UserEntity;
 
+/// Bulk updates users
+#[utoipa::path(
+	post,
+	path = "/auth/update",
+	tag = "Auth",
+    request_body(content = Vec<UserEntity>, description = "Array of users", content_type = "application/json"),
+	responses(
+		(status = 201, description = "Users are successfuly updated"),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
+	)
+)]
 pub async fn update(
     body: web::Json<Vec<UserEntity>>,
     data: web::Data<AppState>,

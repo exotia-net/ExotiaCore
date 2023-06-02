@@ -7,12 +7,16 @@ use serde_json::json;
 use crate::{ApiError, AppState, entities::{prelude::SurvivalEconomy, survival_economy}};
 use super::ServerType;
 
+/// Returns User at Server
 #[utoipa::path(
     get,
     path = "/api/servers/{server}",
     tag = "Servers",
     responses(
-        (status = 200, description = "")
+        (status = 200, description = "Server Entity", body = lib::entities::servers::Model),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
     )
 )]
 pub async fn get(

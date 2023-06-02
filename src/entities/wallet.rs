@@ -2,9 +2,11 @@
 
 use sea_orm::entity::prelude::*;
 use serde::Deserialize;
+use utoipa::ToSchema;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Deserialize, ToSchema)]
 #[sea_orm(table_name = "wallet")]
+#[schema(as = lib::entities::wallet::Model, title = "Wallet")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,

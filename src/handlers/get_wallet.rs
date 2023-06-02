@@ -3,6 +3,19 @@ use sea_orm::{EntityTrait, ColumnTrait, QueryFilter};
 
 use crate::{ApiError, AppState, entities::{users, wallet}};
 
+/// Returns someones wallet
+#[utoipa::path(
+    get,
+    path = "/wallet",
+    tag = "Wallet (Websocket)",
+    request_body(content = String, description = "GET /wallet {uuid}", content_type = "text/plain"),
+    responses(
+        (status = 200, description = "Requested wallet", body = lib::entities::wallet::Model),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
+    )
+)]
 pub async fn get_wallet(req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
 	let data: &Data<AppState> = req.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?;
 

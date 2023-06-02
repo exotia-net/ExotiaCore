@@ -3,6 +3,19 @@ use sea_orm::{EntityTrait, QueryFilter, ColumnTrait, Set, ActiveModelTrait};
 
 use crate::{ApiError, entities::{users, wallet}, AppState};
 
+/// Removes money from user
+#[utoipa::path(
+    post,
+    path = "/wallet",
+    tag = "Wallet (Websocket)",
+    request_body(content = String, description = "POST /wallet {uuid} {balance}", content_type = "text/plain"),
+    responses(
+        (status = 200, description = "Updated wallet", body = lib::entities::wallet::Model),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
+    )
+)]
 pub async fn wallet_buy(
 	req: &HttpRequest,
 	args: &Vec<String>,

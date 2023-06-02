@@ -6,17 +6,17 @@ use crate::{ApiError, entities::{users, prelude::Users, survival_economy, wallet
 
 use crate::entities::prelude::{Wallet, SurvivalEconomy};
 
+/// Creates new user
 #[utoipa::path(
 	post,
 	path = "/auth/signUp",
 	tag = "Auth",
 	responses(
 		(status = 201, description = "User is successfuly created"),
+		(status = 404, description = "If value is none"),
 		(status = 500, description = "Database error"),
-		(status = 404, description = "If value is none")
 	)
 )]
-// #[post("/signUp")]
 pub async fn create(
 	data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {

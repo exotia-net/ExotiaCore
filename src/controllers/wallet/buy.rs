@@ -5,6 +5,19 @@ use crate::{AppState, ApiError};
 
 use super::WalletBuy;
 
+/// Removes money from user
+#[utoipa::path(
+    post,
+    path = "/api/wallet/buy",
+    tag = "Wallet",
+    request_body(content = WalletBuy, description = "Removes money from user", content_type = "text/plain"),
+    responses(
+        (status = 200, description = "Updated wallet", body = lib::entities::wallet::Model),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
+    )
+)]
 pub async fn buy(
 	req: HttpRequest,
 	body: web::Json<WalletBuy>,

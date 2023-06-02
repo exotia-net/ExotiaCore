@@ -3,6 +3,19 @@ use sea_orm::{EntityTrait, ColumnTrait, QueryFilter};
 
 use crate::{controllers::servers::ServerType, ApiError, AppState, entities::{users, survival_economy}};
 
+/// Returns User at Server
+#[utoipa::path(
+    get,
+    path = "/servers/{server}/economy",
+    tag = "Servers (Websocket)",
+    request_body(content = String, description = "GET /servers/{server}/economy {uuid}", content_type = "text/plain"),
+    responses(
+        (status = 200, description = "Server Entity", body = lib::entities::servers::Model),
+        (status = 401, description = "You are not authorized to access this resource"),
+		(status = 404, description = "If value is none"),
+		(status = 500, description = "Database error"),
+    )
+)]
 pub async fn get_economy(server_type: ServerType, req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
 	let data: &Data<AppState> = req.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?;
 
