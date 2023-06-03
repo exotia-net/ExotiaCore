@@ -20,12 +20,12 @@ pub async fn get(
 	data: web::Data<AppState>,
 ) -> Result<impl Responder, ApiError> {
     let user_guard = data.user.lock()?;
-    let user = &user_guard.as_ref().unwrap();
+    let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
-	let res = crate::handlers::wallet::get(&req, &vec![user.uuid.to_string()]).await?;
-	let res: serde_json::Value = serde_json::from_str(&res)?;
+	let response = crate::handlers::wallet::get(&req, &vec![user.uuid.to_string()]).await?;
+	let response: serde_json::Value = serde_json::from_str(&response)?;
 
 	Ok(
-		HttpResponse::Ok().json(json!{ res })
+		HttpResponse::Ok().json(json!{ response })
 	)
 }

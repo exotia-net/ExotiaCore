@@ -21,7 +21,7 @@ pub async fn create(
 	data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {
 	let exotia_key_guard = data.exotia_key.lock()?;
-	let user_data = &exotia_key_guard.as_ref().unwrap();
+	let user_data = &exotia_key_guard.as_ref().ok_or(ApiError::NoneValue("User data"))?;
 
 	let user = users::ActiveModel {
 		uuid: Set(user_data.uuid),
@@ -33,12 +33,9 @@ pub async fn create(
 
 	let user_insert = Users::insert(user).exec(&data.conn).await;
 
-	let user_insert = match user_insert {
-		Ok(v) => v,
-		Err(_) => return Ok(HttpResponse::Conflict()
-			.content_type(ContentType::json())
-			.json(json!({ "message": "User with that uuid already exists" }))),
-	};
+    let Ok(user_insert) = user_insert else { return Ok(HttpResponse::Conflict()
+        .content_type(ContentType::json())
+        .json(json!({ "message": "User with that uuid already exists" }))) };
 
 	let survival = survival_economy::ActiveModel {
 		user_id: Set(user_insert.last_insert_id),
@@ -46,16 +43,13 @@ pub async fn create(
 		..Default::default()
 	};
 
-	let survival_economy_insert = match SurvivalEconomy::insert(survival).exec(&data.conn).await {
-		Ok(v) => v,
-		Err(_) => {
-			Users::delete_by_id(user_insert.last_insert_id);
+    let Ok(survival_economy_insert) = SurvivalEconomy::insert(survival).exec(&data.conn).await else {
+        Users::delete_by_id(user_insert.last_insert_id);
 
-			return Ok(HttpResponse::InternalServerError()
-				.content_type(ContentType::json())
-				.json(json!({ "message": "Failed to create SurvivalEconomy Table" })));
-		}
-	};
+        return Ok(HttpResponse::InternalServerError()
+            .content_type(ContentType::json())
+            .json(json!({ "message": "Failed to create SurvivalEconomy Table" })));
+    };
 
 	let wallet_ = wallet::ActiveModel {
 		user_id: Set(user_insert.last_insert_id),
@@ -64,13 +58,10 @@ pub async fn create(
 		..Default::default()
 	};
 
-	match Wallet::insert(wallet_).exec(&data.conn).await {
-		Ok(_) => (),
-		Err(_) => {
-			Users::delete_by_id(user_insert.last_insert_id);
-			SurvivalEconomy::delete_by_id(survival_economy_insert.last_insert_id);
-		}
-	}
+    if (Wallet::insert(wallet_).exec(&data.conn).await).is_ok() {} else {
+         Users::delete_by_id(user_insert.last_insert_id);
+         SurvivalEconomy::delete_by_id(survival_economy_insert.last_insert_id);
+    }
 
 	drop(exotia_key_guard);
 

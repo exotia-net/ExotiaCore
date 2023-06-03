@@ -1,10 +1,10 @@
-use std::{time::{Duration, Instant}, sync::{Arc, Mutex}};
+use std::{time::{Duration, Instant}, sync::{Arc, Mutex}, fmt::Display};
 
 use actix::prelude::*;
 use actix_web::{HttpRequest, http::StatusCode};
 use actix_web_actors::ws;
 use serde::Serialize;
-use regex::Regex;
+use uuid::Uuid;
 
 use crate::handlers::handle_command;
 
@@ -22,7 +22,13 @@ struct ResponseBody {
     message: String,
     data: Option<String>,
     endpoint: String,
-    uuid: Option<String>,
+    uuid: Option<Uuid>,
+}
+
+impl Display for ResponseBody {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", serde_json::to_string(&self).unwrap_or_default())
+    }
 }
 
 impl ResponseBody {
@@ -34,9 +40,6 @@ impl ResponseBody {
             endpoint: String::new(),
             uuid: None,
         }
-    }
-    fn to_string(&self) -> String {
-        serde_json::to_string(&self).unwrap_or_default()
     }
 }
 
@@ -88,38 +91,32 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                 if text.len() == 0 {
                     return;
                 }
-                let text = text.replace("|", " ");
-                let command: Vec<String> = text.split_whitespace().map(|v| v.to_owned()).collect();
+                let text = text.replace('|', " ");
+                let command: Vec<String> = text.split_whitespace().map(std::borrow::ToOwned::to_owned).collect();
                 let cmd: (String, String) = (command[0].clone(), command[1].clone());
                 let args = command[2..].to_vec();
                 let res: Arc<Mutex<ResponseBody>> = Arc::new(Mutex::new(ResponseBody::new()));
                 let request = self.req.clone();
                 async move {
                     let res_command = handle_command(cmd.clone(), args.clone(), request).await;
-
-                    let re = Regex::new(r"^[0-9a-f]{8}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{4}\b-[0-9a-f]{12}$").unwrap();
+                    
                     let uuid = args.get(0);
-                    let uuid = match uuid {
-                        Some(v) => v.clone().to_string(),
-                        None => String::new()
-                    };
+                    let uuid = uuid.map_or_else(String::new, std::clone::Clone::clone);
 
                     let res_command = match res_command {
                         Ok(v) => {
-                            let val: Option<String>;
-                            if v.is_empty() { val = None; } 
-                            else { val = Some(v); }
+                            let val: Option<String> = if v.is_empty() {
+                                None
+                            } else {
+                                Some(v)
+                            };
                             
                             ResponseBody {
                                 code: StatusCode::OK.as_u16(),
                                 message: String::from("Ok"),
                                 data: val,
                                 endpoint: format!("{} {}", cmd.0, cmd.1.clone()),
-                                uuid: if re.is_match(&uuid) {
-                                    Some(uuid.clone())
-                                } else {
-                                    None
-                                }
+                                uuid: Uuid::parse_str(&uuid).map_or(None, |v| Some(v)),
                             }
                         },
                         Err(e) => {
@@ -128,11 +125,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                                 message: e.to_string(),
                                 data: None,
                                 endpoint: format!("{} {}", cmd.0, cmd.1.clone()),
-                                uuid: if re.is_match(&uuid) {
-                                    Some(uuid.clone())
-                                } else {
-                                    None
-                                }
+                                uuid: Uuid::parse_str(&uuid).map_or(None, |v| Some(v)),
                             }
                         }
                     };

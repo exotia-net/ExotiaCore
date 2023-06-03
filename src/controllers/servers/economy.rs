@@ -25,7 +25,7 @@ pub async fn economy(
 	data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {
 	let user_guard = data.user.lock()?;
-	let user = &user_guard.as_ref().unwrap();
+    let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
 	crate::handlers::servers::economy(path.into_inner(), &req, &vec![user.uuid.to_string(), body.balance.to_string()]).await?;
 

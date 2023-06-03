@@ -41,5 +41,5 @@ pub async fn buy(
 
 	wallet_db.update(&data.conn).await?;
 
-	Ok(format!("Updated"))
+	Ok("Updated".to_string())
 }

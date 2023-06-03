@@ -4,7 +4,7 @@ use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 use utoipa::ToSchema;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Deserialize, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Deserialize, ToSchema)]
 #[sea_orm(table_name = "users")]
 #[schema(as = lib::entities::users::Model, title = "Users")]
 pub struct Model {

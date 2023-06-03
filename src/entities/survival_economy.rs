@@ -3,7 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::Deserialize;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Deserialize)]
 #[sea_orm(table_name = "survival_economy")]
 pub struct Model {
     #[sea_orm(primary_key)]

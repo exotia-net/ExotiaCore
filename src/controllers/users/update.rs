@@ -45,16 +45,16 @@ pub async fn update(
     let mut last_ip_values = Vec::new();
     let mut nick_values = Vec::new();
 
-    for uuid in uuids.iter() { uuid_values.push(Value::String(Some(Box::new(uuid.clone())))); }
+    for uuid in &uuids { uuid_values.push(Value::String(Some(Box::new(uuid.clone())))); }
     params.push(Value::Array(ArrayType::String, Some(Box::new(uuid_values))));
 
-    for ip in last_ips.iter() { last_ip_values.push(Value::String(Some(Box::new(ip.clone())))); }
+    for ip in &last_ips { last_ip_values.push(Value::String(Some(Box::new(ip.clone())))); }
     params.push(Value::Array(ArrayType::String, Some(Box::new(last_ip_values))));
 
-    for nick in nicks.iter() { nick_values.push(Value::String(Some(Box::new(nick.clone())))); }
+    for nick in &nicks { nick_values.push(Value::String(Some(Box::new(nick.clone())))); }
     params.push(Value::Array(ArrayType::String, Some(Box::new(nick_values))));
 
-    let query_statement = Statement::from_sql_and_values(sea_orm::DatabaseBackend::Postgres, &query_sql, params);
+    let query_statement = Statement::from_sql_and_values(sea_orm::DatabaseBackend::Postgres, query_sql, params);
 
     data.conn.execute(query_statement).await?;
 

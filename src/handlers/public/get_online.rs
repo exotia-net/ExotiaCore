@@ -1,7 +1,7 @@
 use std::net::TcpStream;
 use craftping::sync::ping;
 
-use crate::{MINECRAFT_ADDRESS, MINECRAFT_PORT};
+use crate::{MINECRAFT_ADDRESS, MINECRAFT_PORT, ApiError};
 
 /// Returns currently connected users
 #[utoipa::path(
@@ -16,11 +16,11 @@ use crate::{MINECRAFT_ADDRESS, MINECRAFT_PORT};
 		(status = 500, description = "Database error"),
     )
 )]
-pub fn get_online() -> String {
+pub fn get_online() -> Result<String, ApiError> {
     unsafe {
         let addr: &str = &MINECRAFT_ADDRESS;
-        let mut stream = TcpStream::connect((addr, MINECRAFT_PORT)).unwrap();
-        let res = ping(&mut stream, &MINECRAFT_ADDRESS, MINECRAFT_PORT).expect("Cannot ping server");
-    	format!("{}/{}", res.online_players, res.max_players)
+        let mut stream = TcpStream::connect((addr, MINECRAFT_PORT))?;
+        let res = ping(&mut stream, &MINECRAFT_ADDRESS, MINECRAFT_PORT)?;
+    	Ok(format!("{}/{}", res.online_players, res.max_players))
     }
 }

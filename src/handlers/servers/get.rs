@@ -26,7 +26,7 @@ pub async fn get(server_type: ServerType, req: &HttpRequest, args: &Vec<String>)
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
-    return match server_type {
+    match server_type {
         ServerType::Survival => {
             let server_db = survival_economy::Entity::find()
                 .filter(survival_economy::Column::UserId.eq(user.id))
@@ -35,6 +35,6 @@ pub async fn get(server_type: ServerType, req: &HttpRequest, args: &Vec<String>)
                 .ok_or(ApiError::NoneValue("SurvivalEconomy User"))?;
             Ok(format!("{}", server_db.balance))
         }
-    };
+    }
 	// Ok(String::new())
 }

@@ -127,5 +127,6 @@ async fn main() -> Result<(), ApiError> {
     Ok(())
 }
 
+#[allow(clippy::unused_async)]
 pub(self) async fn unauthorized() -> HttpResponse { HttpResponse::Unauthorized().finish() }
 

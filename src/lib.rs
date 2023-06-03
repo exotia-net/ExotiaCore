@@ -35,6 +35,7 @@ pub enum ApiError {
     IoError(std::io::Error),
     UuidError(uuid::Error),
     SerdeError(serde_json::Error),
+    CraftpingError(craftping::Error),
     ParseIntError(std::num::ParseIntError),
     ParseFloatError(std::num::ParseFloatError),
     PoisonError(),
@@ -48,6 +49,7 @@ impl ApiError {
             | Self::IoError(_)
             | Self::UuidError(_)
             | Self::SerdeError(_)
+            | Self::CraftpingError(_)
             | Self::PoisonError()
             | Self::ParseIntError(_)
             | Self::ParseFloatError(_) => StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
@@ -77,6 +79,10 @@ impl fmt::Display for ApiError {
             Self::SerdeError(v) => {
                 warn!("SerdeError: {:?}", v);
                 write!(f, "SerdeError")
+            }
+            Self::CraftpingError(v) => {
+                warn!("CraftpingError: {:?}", v);
+                write!(f, "CraftpingError")
             }
             Self::ParseIntError(v) => {
                 warn!("ParseIntError: {:?}", v);
@@ -121,6 +127,12 @@ impl From<serde_json::Error> for ApiError {
     }
 }
 
+impl From<craftping::Error> for ApiError {
+    fn from(value: craftping::Error) -> Self {
+        Self::CraftpingError(value)
+    }
+}
+
 impl From<std::num::ParseIntError> for ApiError {
     fn from(value: std::num::ParseIntError) -> Self {
         Self::ParseIntError(value)
@@ -152,6 +164,7 @@ impl actix_web::error::ResponseError for ApiError {
             | Self::IoError(_)
             | Self::UuidError(_)
             | Self::SerdeError(_)
+            | Self::CraftpingError(_)
             | Self::PoisonError()
             | Self::ParseIntError(_)
             | Self::ParseFloatError(_) => StatusCode::INTERNAL_SERVER_ERROR,
@@ -223,8 +236,8 @@ async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<entit
     let key = get_config().ok()?.key;
     let plain_token = decrypt(token, &key).ok()?;
     let user_info = plain_token.extract().ok()?;
-    let uuid = user_info.uuid.clone();
-    let mut exotia_key = data.exotia_key.lock().unwrap();
+    let uuid = user_info.uuid;
+    let mut exotia_key = data.exotia_key.lock().ok()?;
     *exotia_key = Some(user_info);
     drop(exotia_key);
 
@@ -268,4 +281,5 @@ pub async fn auth_middleware(
     call
 }
 
+#[allow(clippy::unused_async)]
 pub fn get_auth_key() -> &'static str { unsafe { DEFAULT_AUTH.as_str() } }
