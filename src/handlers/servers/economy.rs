@@ -1,5 +1,6 @@
 use actix_web::{HttpRequest, web::Data};
-use sea_orm::{EntityTrait, QueryFilter, ColumnTrait, Set, ActiveModelTrait};
+use migration::{Expr, Alias};
+use sea_orm::{EntityTrait, QueryFilter, Set, ActiveModelTrait, ModelTrait};
 
 use crate::{controllers::servers::ServerType, entities::{survival_economy, users}, AppState, ApiError};
 
@@ -17,19 +18,17 @@ use crate::{controllers::servers::ServerType, entities::{survival_economy, users
     )
 )]
 pub async fn economy(server_type: ServerType, req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
-
 	let data: &Data<AppState> = req.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?;
 
     let user = users::Entity::find()
-        .filter(users::Column::Uuid.eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
+        .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
         .one(&data.conn)
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
     match server_type {
         ServerType::Survival => {
-            let server_db = survival_economy::Entity::find()
-                .filter(survival_economy::Column::UserId.eq(user.id))
+            let server_db = user.find_related(survival_economy::Entity)
                 .one(&data.conn)
                 .await?
                 .ok_or(ApiError::NoneValue("SurvivalEconomy User"))?;

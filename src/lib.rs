@@ -8,9 +8,11 @@ use std::{fs::File, io::Read, fmt, sync::{Mutex, PoisonError}};
 use actix_web::{HttpResponse, http::{header::ContentType, StatusCode}, body::{self, MessageBody}, web, dev::{ServiceRequest, ServiceResponse}};
 use actix_web_lab::middleware::Next;
 use log::warn;
-use sea_orm::{DatabaseConnection, ColumnTrait, EntityTrait, QueryFilter};
+use migration::{Expr, Alias};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter};
 use serde::Deserialize;
 use serde_json::json;
+use uuid::Uuid;
 
 use once_cell::sync::Lazy;
 use entities::{users, prelude::Users};
@@ -193,40 +195,41 @@ pub fn get_config() -> Result<Config, std::io::Error> {
     Ok(json)
 }
 
-#[allow(unused)]
 #[derive(Debug)]
 pub struct ExotiaKey {
-    pub uuid: String,
+    pub uuid: Uuid,
     pub ip: String,
     pub nick: String,
 }
 
 pub trait UserInfoTrait {
-    fn extract(&self) -> ExotiaKey;
+    fn extract(&self) -> Result<ExotiaKey, ApiError>;
 }
 
 impl UserInfoTrait for String {
-    fn extract(&self) -> ExotiaKey {
+    fn extract(&self) -> Result<ExotiaKey, ApiError> {
         let val: Vec<Self> = self.split('|').map(std::borrow::ToOwned::to_owned).collect();
-        ExotiaKey {
-            uuid: val[0].clone(),
-            ip: val[1].clone(),
-            nick: val[2].clone(),
-        }
+        Ok(
+            ExotiaKey {
+                uuid: Uuid::parse_str(&val[0])?,
+                ip: val[1].clone(),
+                nick: val[2].clone(),
+            }
+        )
     }
 }
 
 async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<entities::users::Model> {
     let key = get_config().ok()?.key;
     let plain_token = decrypt(token, &key).ok()?;
-    let user_info = plain_token.extract();
+    let user_info = plain_token.extract().ok()?;
     let uuid = user_info.uuid.clone();
     let mut exotia_key = data.exotia_key.lock().unwrap();
     *exotia_key = Some(user_info);
     drop(exotia_key);
-    
+
     Users::find()
-        .filter(users::Column::Uuid.like(uuid.as_str()))
+        .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(&uuid.to_string()))
         .one(&data.conn)
         .await
         .ok()?

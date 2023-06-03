@@ -8,7 +8,7 @@ use utoipa::ToSchema;
 
 use crate::auth_middleware;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, ToSchema)]
 pub enum ServerType {
     Survival,
 }

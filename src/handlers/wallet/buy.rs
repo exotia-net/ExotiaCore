@@ -1,4 +1,5 @@
 use actix_web::{HttpRequest, web::Data};
+use migration::{Expr, Alias};
 use sea_orm::{EntityTrait, QueryFilter, ColumnTrait, Set, ActiveModelTrait};
 
 use crate::{ApiError, entities::{users, wallet}, AppState};
@@ -23,7 +24,7 @@ pub async fn buy(
 	let data: &Data<AppState> = req.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?;
 
     let user = users::Entity::find()
-        .filter(users::Column::Uuid.eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
+        .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
         .one(&data.conn)
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;

@@ -52,6 +52,7 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
 
         // Servers
         schemas(lib::controllers::servers::Economy),
+        schemas(lib::controllers::servers::ServerType),
 
         // Wallet
         schemas(lib::controllers::wallet::WalletBuy),

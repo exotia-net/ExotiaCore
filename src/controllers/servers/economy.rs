@@ -6,6 +6,9 @@ use super::{Economy, ServerType};
 #[utoipa::path(
     put,
     path = "/api/servers/{server}/economy",
+    params(
+        ("server" = ServerType, Path, description = "Type of the server")
+    ),
     tag = "Servers",
     request_body(content = Economy, description = "New balance", content_type = "application/json"),
     responses(

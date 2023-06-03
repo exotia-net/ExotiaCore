@@ -37,7 +37,7 @@ pub async fn update(
             unnest($2::VARCHAR[]) as last_ip,
             unnest($3::VARCHAR[]) as nick
         ) as tmp_table
-        where users.uuid = tmp_table.uuid;
+        where CAST(users.uuid as TEXT) = tmp_table.uuid;
         "#;
 
     let mut params = Vec::new();

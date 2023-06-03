@@ -11,6 +11,9 @@ use super::ServerType;
 #[utoipa::path(
     get,
     path = "/api/servers/{server}",
+    params(
+        ("server" = ServerType, Path, description = "Type of the server")
+    ),
     tag = "Servers",
     responses(
         (status = 200, description = "Server Entity", body = lib::entities::servers::Model),
