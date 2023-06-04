@@ -22,20 +22,28 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        // Users
-        lib::controllers::users::auth::auth,
-        lib::controllers::users::create::create,
-        lib::controllers::users::update::update,
+        // Calendars
+        lib::controllers::calendars::get::get,
+        lib::controllers::calendars::update::update,
 
         // Servers
         lib::controllers::servers::get::get,
         lib::controllers::servers::economy::economy,
 
+        // Users
+        lib::controllers::users::auth::auth,
+        lib::controllers::users::create::create,
+        lib::controllers::users::update::update,
+
         // Wallet
         lib::controllers::wallet::get::get,
         lib::controllers::wallet::buy::buy,
 
-        // Servers
+        // Calendars (Websocket)
+        lib::handlers::calendars::get::get,
+        lib::handlers::calendars::update::update,
+
+        // Servers (WebSocket)
         lib::handlers::servers::economy::economy,
         lib::handlers::servers::get::get,
 
@@ -47,6 +55,9 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         lib::handlers::public::get_online::get_online,
     ),
     components(
+        // Calendars
+        schemas(lib::controllers::calendars::CalendarEntity),
+
         // Users
         schemas(lib::controllers::users::UserEntity),
 
@@ -58,6 +69,7 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         schemas(lib::controllers::wallet::WalletBuy),
 
         // Entities
+        schemas(lib::entities::calendars::Model),
         schemas(lib::entities::users::Model),
         schemas(lib::entities::servers::Model),
         schemas(lib::entities::wallet::Model),
@@ -77,7 +89,7 @@ async fn main() -> Result<(), ApiError> {
     unsafe {
         *MINECRAFT_ADDRESS = config.minecraft_address;
         MINECRAFT_PORT = config.minecraft_port;
-        *DEFAULT_AUTH = encrypt(&DEFAULT_AUTH, &config.key); 
+        *DEFAULT_AUTH = encrypt(&DEFAULT_AUTH, &config.key);
     }
 
     let conn = Database::connect(&config.database_url).await?;
@@ -111,6 +123,7 @@ async fn main() -> Result<(), ApiError> {
                 web::scope("/api")
                     .configure(lib::controllers::servers::configure())
                     .configure(lib::controllers::wallet::configure())
+                    .configure(lib::controllers::calendars::configure())
             )
             .service(
                 web::resource("/ws")

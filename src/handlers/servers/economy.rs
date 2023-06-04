@@ -9,7 +9,7 @@ use crate::{controllers::servers::ServerType, entities::{survival_economy, users
     put,
     path = "/servers/{server}/economy",
     tag = "Servers (Websocket)",
-    request_body(content = String, description = "POST /servers/{server}/economy {uuid} {balance}", content_type = "application/json"),
+    request_body(content = String, description = "POST /servers/{server}/economy {uuid} {balance}", content_type = "text/plain"),
     responses(
         (status = 200, description = "Succesfully updated economy"),
         (status = 401, description = "You are not authorized to access this resource"),

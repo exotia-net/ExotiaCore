@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod calendars;
 pub mod cosmetics;
 pub mod servers;
 pub mod survival_economy;

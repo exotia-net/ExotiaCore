@@ -2,9 +2,9 @@ use actix_web::{Responder, web, HttpResponse, http::header::ContentType};
 use sea_orm::{Set, EntityTrait};
 use serde_json::json;
 
-use crate::{ApiError, entities::{users, prelude::Users, survival_economy, wallet}, AppState};
+use crate::{ApiError, entities::{users, prelude::Users, survival_economy, wallet, calendars}, AppState};
 
-use crate::entities::prelude::{Wallet, SurvivalEconomy};
+use crate::entities::prelude::*;
 
 /// Creates new user
 #[utoipa::path(
@@ -51,16 +51,34 @@ pub async fn create(
             .json(json!({ "message": "Failed to create SurvivalEconomy Table" })));
     };
 
-	let wallet_ = wallet::ActiveModel {
+	let wallet = wallet::ActiveModel {
 		user_id: Set(user_insert.last_insert_id),
 		coins: Set(0.0),
 		spent_coins: Set(0.0),
 		..Default::default()
 	};
 
-    if (Wallet::insert(wallet_).exec(&data.conn).await).is_ok() {} else {
-         Users::delete_by_id(user_insert.last_insert_id);
-         SurvivalEconomy::delete_by_id(survival_economy_insert.last_insert_id);
+    let Ok(wallet_insert) = Wallet::insert(wallet).exec(&data.conn).await else {
+        Users::delete_by_id(user_insert.last_insert_id);
+        SurvivalEconomy::delete_by_id(survival_economy_insert.last_insert_id);
+
+        return Ok(HttpResponse::InternalServerError()
+            .content_type(ContentType::json())
+            .json(json!({ "message": "Failed to create Wallet Table" })));
+    };
+    
+    let calendar = calendars::ActiveModel {
+        user_id: Set(user_insert.last_insert_id),
+        step: Set(0),
+        streak: Set(0),
+        last_obtained: Set(None),
+        ..Default::default()
+    };
+
+    if (Calendars::insert(calendar).exec(&data.conn).await).is_ok() {} else {
+        Users::delete_by_id(user_insert.last_insert_id);
+        SurvivalEconomy::delete_by_id(survival_economy_insert.last_insert_id);
+        Wallet::delete_by_id(wallet_insert.last_insert_id);
     }
 
 	drop(exotia_key_guard);

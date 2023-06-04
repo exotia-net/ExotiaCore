@@ -59,6 +59,6 @@ pub async fn update(
     data.conn.execute(query_statement).await?;
 
     Ok(
-        HttpResponse::Ok().json(json!{ "test" })
+        HttpResponse::Accepted().json(json!{ "Updated" })
     )
 }
