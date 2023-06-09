@@ -15,6 +15,8 @@ pub struct Model {
     pub step: i32,
     pub last_obtained: Option<DateTime>,
     pub streak: i32,
+    #[sea_orm(column_type = "Text")]
+    pub obtained_rewards: String,
     pub created_at: Option<DateTime>,
     pub updated_at: Option<DateTime>,
 }

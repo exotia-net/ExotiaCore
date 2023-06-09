@@ -26,7 +26,7 @@ pub async fn get(
     path: web::Path<ServerType>, 
     data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {
-    let user_guard = data.user.lock()?;
+    let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
     let server = match path.into_inner() {

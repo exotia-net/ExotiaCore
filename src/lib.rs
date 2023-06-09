@@ -4,9 +4,11 @@ pub mod controllers;
 pub mod utils;
 pub mod entities;
 
-use std::{fs::File, io::Read, fmt, sync::{Mutex, PoisonError}};
+use std::sync::PoisonError;
+use std::{fs::File, io::Read, fmt};
 use actix_web::{HttpResponse, http::{header::ContentType, StatusCode}, body::{self, MessageBody}, web, dev::{ServiceRequest, ServiceResponse}};
 use actix_web_lab::middleware::Next;
+use futures::lock::Mutex;
 use log::warn;
 use migration::{Expr, Alias};
 use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter};
@@ -237,7 +239,7 @@ async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<entit
     let plain_token = decrypt(token, &key).ok()?;
     let user_info = plain_token.extract().ok()?;
     let uuid = user_info.uuid;
-    let mut exotia_key = data.exotia_key.lock().ok()?;
+    let mut exotia_key = data.exotia_key.lock().await;
     *exotia_key = Some(user_info);
     drop(exotia_key);
 
@@ -261,10 +263,9 @@ pub async fn auth_middleware(
     let Some(token_v) = token else {
         return Err(actix_web::error::ErrorUnauthorized(""));
     };
-    
-    let call = match validate_token(&token_v, &data).await {
+    match validate_token(&token_v, &data).await {
         Some(v) => {
-            let mut user = data.user.lock().unwrap();
+            let mut user = data.user.lock().await;
             *user = Some(v);
             drop(user);
             next.call(req).await
@@ -273,12 +274,11 @@ pub async fn auth_middleware(
             if req.uri() == "/auth/signUp" {
                 next.call(req).await
             } else {
-                return Err(actix_web::error::ErrorUnauthorized(""))
+                Err(actix_web::error::ErrorUnauthorized(""))
             }
         }
-    };
+    }
     //After Request
-    call
 }
 
 #[allow(clippy::unused_async)]

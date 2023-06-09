@@ -116,7 +116,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                                 message: String::from("Ok"),
                                 data: val,
                                 endpoint: format!("{} {}", cmd.0, cmd.1.clone()),
-                                uuid: Uuid::parse_str(&uuid).map_or(None, |v| Some(v)),
+                                uuid: Uuid::parse_str(&uuid).map_or(None, Some),
                             }
                         },
                         Err(e) => {
@@ -125,7 +125,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                                 message: e.to_string(),
                                 data: None,
                                 endpoint: format!("{} {}", cmd.0, cmd.1.clone()),
-                                uuid: Uuid::parse_str(&uuid).map_or(None, |v| Some(v)),
+                                uuid: Uuid::parse_str(&uuid).map_or(None, Some),
                             }
                         }
                     };

@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use actix_web::{Responder, web, HttpResponse, HttpRequest};
+use futures::lock::Mutex;
 use crate::{ApiError, AppState};
 use super::{Economy, ServerType};
 
@@ -24,10 +27,10 @@ pub async fn economy(
 	body: web::Json<Economy>,
 	data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {
-	let user_guard = data.user.lock()?;
+	let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
-	crate::handlers::servers::economy(path.into_inner(), &req, &vec![user.uuid.to_string(), body.balance.to_string()]).await?;
+	crate::handlers::servers::economy(path.into_inner(), Arc::new(Mutex::new(req)), &vec![user.uuid.to_string(), body.balance.to_string()]).await?;
 
 	drop(user_guard);
 	Ok(

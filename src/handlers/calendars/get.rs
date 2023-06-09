@@ -30,7 +30,7 @@ pub async fn get(req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiErr
     let calendar = user.find_related(calendars::Entity)
         .one(&data.conn)
         .await?
-        .ok_or(ApiError::NoneValue("Calendar"))?;    
+        .ok_or(ApiError::NoneValue("Calendar"))?;
 
     Ok(serde_json::to_string(&calendar)?)
 }

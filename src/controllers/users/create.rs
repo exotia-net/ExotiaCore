@@ -20,7 +20,7 @@ use crate::entities::prelude::*;
 pub async fn create(
 	data: web::Data<AppState>
 ) -> Result<impl Responder, ApiError> {
-	let exotia_key_guard = data.exotia_key.lock()?;
+	let exotia_key_guard = data.exotia_key.lock().await;
 	let user_data = &exotia_key_guard.as_ref().ok_or(ApiError::NoneValue("User data"))?;
 
 	let user = users::ActiveModel {
@@ -72,6 +72,7 @@ pub async fn create(
         step: Set(0),
         streak: Set(0),
         last_obtained: Set(None),
+        obtained_rewards: Set(String::new()),
         ..Default::default()
     };
 

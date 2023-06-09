@@ -24,6 +24,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Calendars::Step).integer().not_null())
                     .col(ColumnDef::new(Calendars::LastObtained).timestamp().null())
                     .col(ColumnDef::new(Calendars::Streak).integer().not_null())
+                    .col(ColumnDef::new(Calendars::ObtainedRewards).text().not_null())
                     .col(ColumnDef::new(Calendars::CreatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))
                     .col(ColumnDef::new(Calendars::UpdatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))//.extra("ON UPDATE CURRENT_TIMESTAMP".to_string())
                     .foreign_key(
@@ -53,6 +54,7 @@ enum Calendars {
     Step,
     LastObtained,
     Streak,
+    ObtainedRewards,
     CreatedAt,
     UpdatedAt,
 }

@@ -23,7 +23,7 @@ pub async fn update(
     data: web::Data<AppState>,
 ) -> Result<impl Responder, ApiError> {
     let body = body.into_inner();
-	let user_guard = data.user.lock()?;
+	let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
     crate::handlers::calendars::update(&req, &vec![user.uuid.to_string(), body.step.to_string(), body.streak.to_string()]).await?;

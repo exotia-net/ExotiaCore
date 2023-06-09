@@ -20,6 +20,6 @@ pub async fn auth(data: web::Data<AppState>) -> Result<HttpResponse, ApiError> {
     Ok(
         HttpResponse::Ok()
 			.content_type(ContentType::json())
-			.json(json!{ data.user })
+			.json(json!{ *data.user.lock().await })
     )
 }

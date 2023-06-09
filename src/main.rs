@@ -1,7 +1,6 @@
-use std::sync::Mutex;
-
 use actix_cors::Cors;
 use actix_web::{middleware, HttpServer, App, web, HttpRequest, HttpResponse, http::header, guard};
+use futures::lock::Mutex;
 use lib::{Config, get_config, ApiError, AppState, utils::token::encrypt, MINECRAFT_ADDRESS, MINECRAFT_PORT, DEFAULT_AUTH, get_auth_key};
 use actix_web_actors::ws;
 
@@ -105,7 +104,7 @@ async fn main() -> Result<(), ApiError> {
     HttpServer::new(move || {
         let state = AppState {
             conn: conn.clone(),
-            user: Mutex::new(None),
+            user : Mutex::new(None),
             exotia_key: Mutex::new(None),
         };
 
