@@ -23,12 +23,12 @@ pub async fn get(req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiErr
 
     let user = users::Entity::find()
         .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
-        .one(&data.conn)
+        .one(&*data.conn.lock().await)
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
     let calendar = user.find_related(calendars::Entity)
-        .one(&data.conn)
+        .one(&*data.conn.lock().await)
         .await?
         .ok_or(ApiError::NoneValue("Calendar"))?;
 

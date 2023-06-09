@@ -56,7 +56,7 @@ pub async fn update(
 
     let query_statement = Statement::from_sql_and_values(sea_orm::DatabaseBackend::Postgres, query_sql, params);
 
-    data.conn.execute(query_statement).await?;
+    data.conn.lock().await.execute(query_statement).await?;
 
     Ok(
         HttpResponse::Accepted().json(json!{ "Updated" })

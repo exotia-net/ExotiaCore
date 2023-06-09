@@ -26,12 +26,12 @@ pub async fn update(
 
     let user = users::Entity::find()
         .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
-        .one(&data.conn)
+        .one(&*data.conn.lock().await)
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
     let calendar = user.find_related(calendars::Entity)
-        .one(&data.conn)
+        .one(&*data.conn.lock().await)
         .await?
         .ok_or(ApiError::NoneValue("Calendar User"))?;
 
@@ -49,9 +49,14 @@ pub async fn update(
             .parse::<i32>()?
     );
 
+    calendar_db.obtained_rewards = Set(
+        args.get(3)
+            .ok_or(ApiError::NoneValue("Calendar streak"))?.clone()
+    );
+
     calendar_db.last_obtained = Set(Some(Utc::now().naive_local()));
 
-    calendar_db.update(&data.conn).await?;
+    calendar_db.update(&*data.conn.lock().await).await?;
 
     Ok(String::new())
 }

@@ -26,9 +26,10 @@ pub async fn update(
 	let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
-    crate::handlers::calendars::update(&req, &vec![user.uuid.to_string(), body.step.to_string(), body.streak.to_string()]).await?;
+    let mut rewards = body.obtained_rewards.iter().map(|&v| v.to_string() + "|").collect::<String>();
+    rewards.pop();
+    crate::handlers::calendars::update(&req, &vec![user.uuid.to_string(), body.step.to_string(), body.streak.to_string(), rewards]).await?;
 
-    drop(user_guard);
     Ok(
         HttpResponse::Ok().finish()
     )

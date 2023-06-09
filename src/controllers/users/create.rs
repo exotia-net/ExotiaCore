@@ -31,7 +31,7 @@ pub async fn create(
 		..Default::default()
 	};
 
-	let user_insert = Users::insert(user).exec(&data.conn).await;
+	let user_insert = Users::insert(user).exec(&*data.conn.lock().await).await;
 
     let Ok(user_insert) = user_insert else { return Ok(HttpResponse::Conflict()
         .content_type(ContentType::json())
@@ -43,7 +43,7 @@ pub async fn create(
 		..Default::default()
 	};
 
-    let Ok(survival_economy_insert) = SurvivalEconomy::insert(survival).exec(&data.conn).await else {
+    let Ok(survival_economy_insert) = SurvivalEconomy::insert(survival).exec(&*data.conn.lock().await).await else {
         Users::delete_by_id(user_insert.last_insert_id);
 
         return Ok(HttpResponse::InternalServerError()
@@ -58,7 +58,7 @@ pub async fn create(
 		..Default::default()
 	};
 
-    let Ok(wallet_insert) = Wallet::insert(wallet).exec(&data.conn).await else {
+    let Ok(wallet_insert) = Wallet::insert(wallet).exec(&*data.conn.lock().await).await else {
         Users::delete_by_id(user_insert.last_insert_id);
         SurvivalEconomy::delete_by_id(survival_economy_insert.last_insert_id);
 
@@ -76,7 +76,7 @@ pub async fn create(
         ..Default::default()
     };
 
-    if (Calendars::insert(calendar).exec(&data.conn).await).is_ok() {} else {
+    if (Calendars::insert(calendar).exec(&*data.conn.lock().await).await).is_ok() {} else {
         Users::delete_by_id(user_insert.last_insert_id);
         SurvivalEconomy::delete_by_id(survival_economy_insert.last_insert_id);
         Wallet::delete_by_id(wallet_insert.last_insert_id);

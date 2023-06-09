@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use actix_cors::Cors;
 use actix_web::{middleware, HttpServer, App, web, HttpRequest, HttpResponse, http::header, guard};
 use futures::lock::Mutex;
@@ -101,13 +102,13 @@ async fn main() -> Result<(), ApiError> {
 
     log::info!("Starting HTTP server at {}:{}", &config.addr, &config.port);
 
-    HttpServer::new(move || {
-        let state = AppState {
-            conn: conn.clone(),
-            user : Mutex::new(None),
-            exotia_key: Mutex::new(None),
-        };
+    let state = AppState {
+        conn: Arc::new(Mutex::new(conn)),
+        user: Arc::new(Mutex::new(None)),
+        exotia_key: Arc::new(Mutex::new(None)),
+    };
 
+    HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_method()
@@ -116,7 +117,7 @@ async fn main() -> Result<(), ApiError> {
         App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default().log_target("ExotiaCore"))
-            .app_data(web::Data::new(state))
+            .app_data(web::Data::new(state.clone()))
             .service(web::scope("/auth").configure(lib::controllers::users::configure()))
             .service(
                 web::scope("/api")

@@ -1,23 +1,22 @@
 use actix_web::{HttpRequest, web::Data};
 use migration::{Expr, Alias};
-use sea_orm::{EntityTrait, ColumnTrait, QueryFilter};
+use sea_orm::{EntityTrait, QueryFilter, ModelTrait};
 
-use crate::{ApiError, AppState, entities::{users, wallet}};
+use crate::{ApiError, entities::{calendars, users}, AppState};
 
-/// Returns someones wallet
+/// Returns Calendar rewards for some user
 #[utoipa::path(
     get,
-    path = "/wallet",
-    tag = "Wallet (Websocket)",
-    request_body(content = String, description = "GET /wallet {uuid}", content_type = "text/plain"),
+    path = "/calendars/rewards",
+    tag = "Calendars (Websocket)",
     responses(
-        (status = 200, description = "Requested wallet", body = lib::entities::wallet::Model),
+        (status = 200, description = "Calendar Rewards", body = Vec<String>),
         (status = 401, description = "You are not authorized to access this resource"),
 		(status = 404, description = "If value is none"),
 		(status = 500, description = "Database error"),
     )
 )]
-pub async fn get(req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
+pub async fn rewards(req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiError> {
 	let data: &Data<AppState> = req.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?;
 
     let user = users::Entity::find()
@@ -26,11 +25,10 @@ pub async fn get(req: &HttpRequest, args: &Vec<String>) -> Result<String, ApiErr
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
-	let wallet_db = wallet::Entity::find()
-		.filter(wallet::Column::UserId.eq(user.id))
-		.one(&*data.conn.lock().await)
-		.await?
-		.ok_or(ApiError::NoneValue("Wallet"))?;
+    let calendar = user.find_related(calendars::Entity)
+        .one(&*data.conn.lock().await)
+        .await?
+        .ok_or(ApiError::NoneValue("Calendar User"))?;
 
-	Ok(serde_json::to_string(&wallet_db)?)
+    Ok(calendar.obtained_rewards)
 }

@@ -33,7 +33,7 @@ pub async fn get(
         ServerType::Survival => {
             SurvivalEconomy::find()
                 .filter(survival_economy::Column::UserId.eq(user.id))
-                .one(&data.conn)
+                .one(&*data.conn.lock().await)
                 .await?
                 .ok_or(ApiError::NoneValue("SurvivalEconomy User"))
         }

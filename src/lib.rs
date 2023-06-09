@@ -5,7 +5,7 @@ pub mod utils;
 pub mod entities;
 
 use std::sync::PoisonError;
-use std::{fs::File, io::Read, fmt};
+use std::{fs::File, io::Read, fmt, sync::Arc};
 use actix_web::{HttpResponse, http::{header::ContentType, StatusCode}, body::{self, MessageBody}, web, dev::{ServiceRequest, ServiceResponse}};
 use actix_web_lab::middleware::Next;
 use futures::lock::Mutex;
@@ -24,11 +24,11 @@ pub static mut MINECRAFT_ADDRESS: Lazy<String> = Lazy::new(|| "127.0.0.1".to_str
 pub static mut MINECRAFT_PORT: u16 = 25565;
 pub static mut DEFAULT_AUTH: Lazy<String> = Lazy::new(|| "00000000-0000-0000-0000-000000000000|0.0.0.0|0".to_string());
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AppState {
-    pub conn: DatabaseConnection,
-    pub user: Mutex<Option<users::Model>>,
-    pub exotia_key: Mutex<Option<ExotiaKey>>,
+    pub conn: Arc<Mutex<DatabaseConnection>>,
+    pub user: Arc<Mutex<Option<users::Model>>>,
+    pub exotia_key: Arc<Mutex<Option<ExotiaKey>>>,
 }
 
 #[derive(Debug)]
@@ -245,7 +245,7 @@ async fn validate_token(token: &str, data: &web::Data<AppState>) -> Option<entit
 
     Users::find()
         .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(&uuid.to_string()))
-        .one(&data.conn)
+        .one(&*data.conn.lock().await)
         .await
         .ok()?
 }

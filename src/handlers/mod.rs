@@ -23,6 +23,7 @@ pub async fn handle_command(cmd: (String, String), kwargs: Vec<String>, req: Htt
         // Calendars
         ("GET", "/calendars") => calendars::get(&req, &args).await,
         ("PUT", "/calendars") => calendars::update(&req, &args).await,
+        ("GET", "/calendars/rewards") => calendars::rewards(&req, &args).await,
 
         // Servers
         // _ if WildMatch::new("/servers/*/economy").matches(cmd.as_str()) => economy::economy(ServerType::Survival, &req, &args).await,

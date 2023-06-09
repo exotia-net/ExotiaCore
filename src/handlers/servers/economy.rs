@@ -26,14 +26,14 @@ pub async fn economy(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, args
 
     let user = users::Entity::find()
         .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
-        .one(&data.conn)
+        .one(&*data.conn.lock().await)
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
     match server_type {
         ServerType::Survival => {
             let server_db = user.find_related(survival_economy::Entity)
-                .one(&data.conn)
+                .one(&*data.conn.lock().await)
                 .await?
                 .ok_or(ApiError::NoneValue("SurvivalEconomy User"))?;
 
@@ -43,7 +43,7 @@ pub async fn economy(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, args
                         .ok_or(ApiError::NoneValue("User balance"))?
                         .parse::<i32>()?
                 );
-				server_db.update(&data.conn).await?;
+				server_db.update(&*data.conn.lock().await).await?;
         }
     };
     drop(data_guard);

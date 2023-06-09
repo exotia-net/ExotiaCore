@@ -12,6 +12,7 @@ impl Serialize for calendars::Model {
         state.serialize_field("step", &self.step)?;
         state.serialize_field("streak", &self.streak)?;
         state.serialize_field("lastObtained", &self.last_obtained)?;
+        state.serialize_field("obtainedRewards", &self.obtained_rewards.split("|").map(|v| v.parse::<i32>().unwrap()).collect::<Vec<_>>())?;
         state.serialize_field("createdAt", &self.created_at)?;
         state.serialize_field("updatedAt", &self.updated_at)?;
         state.end()

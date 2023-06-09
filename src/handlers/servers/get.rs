@@ -22,7 +22,7 @@ pub async fn get(server_type: ServerType, req: &HttpRequest, args: &Vec<String>)
 
     let user = users::Entity::find()
         .filter(Expr::col(users::Column::Uuid).cast_as(Alias::new("VARCHAR")).eq(args.get(0).ok_or(ApiError::NoneValue("User uuid"))?))
-        .one(&data.conn)
+        .one(&*data.conn.lock().await)
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
@@ -30,7 +30,7 @@ pub async fn get(server_type: ServerType, req: &HttpRequest, args: &Vec<String>)
         ServerType::Survival => {
             let server_db = survival_economy::Entity::find()
                 .filter(survival_economy::Column::UserId.eq(user.id))
-                .one(&data.conn)
+                .one(&*data.conn.lock().await)
                 .await?
                 .ok_or(ApiError::NoneValue("SurvivalEconomy User"))?;
             Ok(format!("{}", server_db.balance))
