@@ -25,6 +25,7 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         // Calendars
         lib::controllers::calendars::get::get,
         lib::controllers::calendars::update::update,
+        lib::controllers::calendars::rewards::rewards,
 
         // Servers
         lib::controllers::servers::get::get,
@@ -42,6 +43,7 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         // Calendars (Websocket)
         lib::handlers::calendars::get::get,
         lib::handlers::calendars::update::update,
+        lib::handlers::calendars::rewards::rewards,
 
         // Servers (WebSocket)
         lib::handlers::servers::economy::economy,
