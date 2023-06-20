@@ -13,7 +13,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub user_id: i32,
     pub step: i32,
-    pub last_obtained: Option<DateTime>,
+    pub last_obtained: DateTime,
     pub streak: i32,
     #[sea_orm(column_type = "Text")]
     pub obtained_rewards: String,

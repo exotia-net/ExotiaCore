@@ -23,7 +23,11 @@ pub async fn rewards(
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
     let response = crate::handlers::calendars::rewards(&req, &vec![user.uuid.to_string()]).await?;
-    let response = response.split("|").map(|v| v.parse::<i32>().unwrap()).collect::<Vec<_>>();
+    let response = if response.len() == 0 {
+        Vec::new()
+    } else {
+        response.split("|").map(|v| v.parse::<i32>().unwrap_or(0)).collect::<Vec<_>>()
+    };
     
     Ok(
         HttpResponse::Ok().json(json!({ "obtainedRewards": response }))

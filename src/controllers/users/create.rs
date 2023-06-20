@@ -1,4 +1,5 @@
 use actix_web::{Responder, web, HttpResponse, http::header::ContentType};
+use chrono::NaiveDateTime;
 use sea_orm::{Set, EntityTrait};
 use serde_json::json;
 
@@ -71,7 +72,7 @@ pub async fn create(
         user_id: Set(user_insert.last_insert_id),
         step: Set(0),
         streak: Set(0),
-        last_obtained: Set(None),
+        last_obtained: Set(NaiveDateTime::default()),
         obtained_rewards: Set(String::new()),
         ..Default::default()
     };

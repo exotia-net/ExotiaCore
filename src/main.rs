@@ -96,7 +96,7 @@ async fn main() -> Result<(), ApiError> {
 
     let conn = Database::connect(&config.database_url).await?;
 
-    // Migrator::refresh(&conn).await?;
+    Migrator::refresh(&conn).await?;
     Migrator::up(&conn, None).await?;
     Migrator::status(&conn).await?;
 

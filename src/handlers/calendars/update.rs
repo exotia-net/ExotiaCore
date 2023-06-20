@@ -1,5 +1,5 @@
 use actix_web::{web::Data, HttpRequest};
-use chrono::Utc;
+use chrono::NaiveDateTime;
 use migration::{Expr, Alias};
 use sea_orm::{EntityTrait, QueryFilter, ModelTrait, Set, ActiveModelTrait};
 
@@ -8,9 +8,9 @@ use crate::{ApiError, AppState, entities::{users, calendars}};
 /// Updates calendar for user
 #[utoipa::path(
 	put,
-	path = "/calendar",
+	path = "/calendars",
 	tag = "Calendars (Websocket)",
-    request_body(content = String, description = "PUT /calendar {uuid} {step} {streak}", content_type = "plain/text"),
+    request_body(content = String, description = "PUT /calendar {uuid} {step} {streak} {obtained_rewards} {last_obtained}", content_type = "plain/text", example = json!("PUT /calendars 16b01d4c-7895-4843-b4d6-3dc302f2913b 1 2 1|2|3|4 2023-06-15T15:28:38")),
 	responses(
 		(status = 201, description = "Calendar are successfuly updated"),
         (status = 401, description = "You are not authorized to access this resource"),
@@ -51,10 +51,14 @@ pub async fn update(
 
     calendar_db.obtained_rewards = Set(
         args.get(3)
-            .ok_or(ApiError::NoneValue("Calendar streak"))?.clone()
+            .ok_or(ApiError::NoneValue("Calendar obtained_rewards"))?.clone()
     );
 
-    calendar_db.last_obtained = Set(Some(Utc::now().naive_local()));
+    calendar_db.last_obtained = Set(NaiveDateTime::parse_from_str(
+        args.get(4)
+            .ok_or(ApiError::NoneValue("Calendar last_obtained"))?,
+        "%Y-%m-%d %H:%M:%S"
+    )?);
 
     calendar_db.update(&*data.conn.lock().await).await?;
 

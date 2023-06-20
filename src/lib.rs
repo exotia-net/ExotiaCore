@@ -41,6 +41,7 @@ pub enum ApiError {
     ParseIntError(std::num::ParseIntError),
     ParseFloatError(std::num::ParseFloatError),
     PoisonError(),
+    ChronoParseError(chrono::ParseError),
     NoneValue(&'static str),
 }
 
@@ -53,6 +54,7 @@ impl ApiError {
             | Self::SerdeError(_)
             | Self::CraftpingError(_)
             | Self::PoisonError()
+            | Self::ChronoParseError(_)
             | Self::ParseIntError(_)
             | Self::ParseFloatError(_) => StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
             Self::NoneValue(_) => StatusCode::NOT_FOUND.as_u16(),
@@ -96,6 +98,10 @@ impl fmt::Display for ApiError {
             }
             Self::PoisonError() => {
                 write!(f, "PoisonError")
+            }
+            Self::ChronoParseError(v) => {
+                warn!("ChronoParseError: {:?}", v);
+                write!(f, "ChronoParseError")
             }
             Self::NoneValue(v) => {
                 warn!("{:?} returned None", v);
@@ -153,6 +159,12 @@ impl<T> From<PoisonError<T>> for ApiError {
     }
 }
 
+impl From<chrono::ParseError> for ApiError {
+    fn from(value: chrono::ParseError) -> Self {
+        Self::ChronoParseError(value)
+    }
+}
+
 impl actix_web::error::ResponseError for ApiError {
     fn error_response(&self) -> HttpResponse<body::BoxBody> {
         HttpResponse::build(self.status_code())
@@ -169,6 +181,7 @@ impl actix_web::error::ResponseError for ApiError {
             | Self::CraftpingError(_)
             | Self::PoisonError()
             | Self::ParseIntError(_)
+            | Self::ChronoParseError(_)
             | Self::ParseFloatError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::NoneValue(_) => StatusCode::NOT_FOUND,
         }

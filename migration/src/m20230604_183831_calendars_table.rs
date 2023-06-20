@@ -22,7 +22,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Calendars::UserId).integer().not_null().unique_key())
                     .col(ColumnDef::new(Calendars::Step).integer().not_null())
-                    .col(ColumnDef::new(Calendars::LastObtained).timestamp().null())
+                    .col(ColumnDef::new(Calendars::LastObtained).timestamp().not_null())
                     .col(ColumnDef::new(Calendars::Streak).integer().not_null())
                     .col(ColumnDef::new(Calendars::ObtainedRewards).text().not_null())
                     .col(ColumnDef::new(Calendars::CreatedAt).date_time().extra("DEFAULT CURRENT_TIMESTAMP".to_string()))

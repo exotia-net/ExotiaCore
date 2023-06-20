@@ -91,7 +91,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocket {
                 if text.len() == 0 {
                     return;
                 }
-                let text = text.replace('|', " ");
                 let command: Vec<String> = text.split_whitespace().map(std::borrow::ToOwned::to_owned).collect();
                 let cmd: (String, String) = (command[0].clone(), command[1].clone());
                 let args = command[2..].to_vec();

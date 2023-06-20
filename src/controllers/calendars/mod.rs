@@ -2,6 +2,7 @@ use actix_web::web::{ServiceConfig, self};
 use actix_web_lab::middleware::from_fn;
 use serde::Deserialize;
 use utoipa::ToSchema;
+use sea_orm::prelude::DateTime;
 
 use crate::auth_middleware;
 
@@ -14,7 +15,8 @@ pub mod rewards;
 pub struct CalendarEntity {
     step: i32,
     streak: i32,
-    obtained_rewards: Vec<i32>
+    obtained_rewards: Vec<i32>,
+    last_obtained: DateTime,
 }
 
 pub fn configure() -> impl FnOnce(&mut ServiceConfig) {
