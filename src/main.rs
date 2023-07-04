@@ -35,6 +35,7 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         lib::controllers::users::auth::auth,
         lib::controllers::users::create::create,
         lib::controllers::users::update::update,
+        lib::controllers::users::setup::setup,
 
         // Wallet
         lib::controllers::wallet::get::get,
