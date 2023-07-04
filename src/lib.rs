@@ -1,5 +1,5 @@
 pub mod server;
-pub mod handlers;
+pub mod websocket_handlers;
 pub mod controllers;
 pub mod utils;
 pub mod entities;

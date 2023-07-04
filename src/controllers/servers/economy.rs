@@ -30,7 +30,7 @@ pub async fn economy(
 	let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
-	crate::handlers::servers::economy(path.into_inner(), Arc::new(Mutex::new(req)), &vec![user.uuid.to_string(), body.balance.to_string()]).await?;
+	crate::websocket_handlers::servers::economy(path.into_inner(), Arc::new(Mutex::new(req)), &vec![user.uuid.to_string(), body.balance.to_string()]).await?;
 
 	drop(user_guard);
 	Ok(

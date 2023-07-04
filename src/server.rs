@@ -6,7 +6,7 @@ use actix_web_actors::ws;
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::handlers::handle_command;
+use crate::websocket_handlers::handle_command;
 
 const HEARBEAT_INTERVAL: Duration = Duration::from_secs(10);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(15);

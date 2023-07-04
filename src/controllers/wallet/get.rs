@@ -22,7 +22,7 @@ pub async fn get(
     let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
-	let response = crate::handlers::wallet::get(&req, &vec![user.uuid.to_string()]).await?;
+	let response = crate::websocket_handlers::wallet::get(&req, &vec![user.uuid.to_string()]).await?;
 	let response: serde_json::Value = serde_json::from_str(&response)?;
 
 	Ok(

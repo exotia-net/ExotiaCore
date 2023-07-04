@@ -22,7 +22,7 @@ pub async fn rewards(
     let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
-    let response = crate::handlers::calendars::rewards(&req, &vec![user.uuid.to_string()]).await?;
+    let response = crate::websocket_handlers::calendars::rewards(&req, &vec![user.uuid.to_string()]).await?;
     let response = if response.len() == 0 {
         Vec::new()
     } else {

@@ -26,7 +26,7 @@ pub async fn buy(
     let user_guard = data.user.lock().await;
     let user = &user_guard.as_ref().ok_or(ApiError::NoneValue("User"))?;
 
-	let response = crate::handlers::wallet::buy(&req, &vec![user.uuid.to_string(), body.cost.to_string()]).await?;
+	let response = crate::websocket_handlers::wallet::buy(&req, &vec![user.uuid.to_string(), body.cost.to_string()]).await?;
 
 	Ok(
 		HttpResponse::Ok().json(json!{ response })

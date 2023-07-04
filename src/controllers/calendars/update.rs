@@ -28,7 +28,7 @@ pub async fn update(
 
     let mut rewards = body.obtained_rewards.iter().map(|&v| v.to_string() + "|").collect::<String>();
     rewards.pop();
-    crate::handlers::calendars::update(&req, &vec![user.uuid.to_string(), body.step.to_string(), body.streak.to_string(), rewards, body.last_obtained.to_string()]).await?;
+    crate::websocket_handlers::calendars::update(&req, &vec![user.uuid.to_string(), body.step.to_string(), body.streak.to_string(), rewards, body.last_obtained.to_string()]).await?;
 
     Ok(
         HttpResponse::Ok().finish()

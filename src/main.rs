@@ -41,20 +41,20 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         lib::controllers::wallet::buy::buy,
 
         // Calendars (Websocket)
-        lib::handlers::calendars::get::get,
-        lib::handlers::calendars::update::update,
-        lib::handlers::calendars::rewards::rewards,
+        lib::websocket_handlers::calendars::get::get,
+        lib::websocket_handlers::calendars::update::update,
+        lib::websocket_handlers::calendars::rewards::rewards,
 
         // Servers (WebSocket)
-        lib::handlers::servers::economy::economy,
-        lib::handlers::servers::get::get,
+        lib::websocket_handlers::servers::economy::economy,
+        lib::websocket_handlers::servers::get::get,
 
         // Wallet (WebSocket)
-        lib::handlers::wallet::buy::buy,
-        lib::handlers::wallet::get::get,
+        lib::websocket_handlers::wallet::buy::buy,
+        lib::websocket_handlers::wallet::get::get,
 
         // Public
-        lib::handlers::public::get_online::get_online,
+        lib::websocket_handlers::public::get_online::get_online,
     ),
     components(
         // Calendars
