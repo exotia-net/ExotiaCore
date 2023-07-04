@@ -8,7 +8,7 @@ use super::UserEntity;
 
 /// Bulk updates users
 #[utoipa::path(
-	post,
+	put,
 	path = "/auth/update",
 	tag = "Auth",
     request_body(content = Vec<UserEntity>, description = "Array of users", content_type = "application/json"),
