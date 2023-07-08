@@ -9,7 +9,7 @@ use crate::{controllers::servers::ServerType, entities::{survival_economy, users
 /// Updates user economy on server
 #[utoipa::path(
     post,
-    path = "/servers/{server}/economy",
+    path = "/servers/{server}/economy/add",
     tag = "Servers (Websocket)",
     request_body(content = String, description = "POST /servers/{server}/economy {uuid} {balance}", content_type = "text/plain"),
     responses(
@@ -19,7 +19,7 @@ use crate::{controllers::servers::ServerType, entities::{survival_economy, users
 		(status = 500, description = "Database error"),
     )
 )]
-pub async fn economy(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, args: &Vec<String>) -> Result<String, ApiError> {
+pub async fn economy_add(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, args: &Vec<String>) -> Result<String, ApiError> {
     let req_thread = Arc::clone(&req);
     let data_guard = req_thread.lock().await;
 	let data: Data<AppState> = data_guard.app_data::<Data<AppState>>().ok_or(ApiError::NoneValue("AppState"))?.clone();
@@ -39,6 +39,7 @@ pub async fn economy(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, args
 
             let mut server_db: survival_economy::ActiveModel = server_db.into();
 				server_db.balance = Set(
+                    server_db.balance.unwrap() +
                     args.get(1)
                         .ok_or(ApiError::NoneValue("User balance"))?
                         .parse::<i32>()?

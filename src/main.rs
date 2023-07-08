@@ -48,6 +48,7 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
 
         // Servers (WebSocket)
         lib::websocket_handlers::servers::economy::economy,
+        lib::websocket_handlers::servers::economy_add::economy_add,
         lib::websocket_handlers::servers::get::get,
 
         // Wallet (WebSocket)

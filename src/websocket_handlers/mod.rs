@@ -8,6 +8,7 @@ pub mod public;
 pub mod servers;
 pub mod wallet;
 pub mod calendars;
+pub mod tops;
 
 #[must_use]
 pub async fn handle_command(cmd: (String, String), kwargs: Vec<String>, req: HttpRequest) -> Result<String, ApiError> {
@@ -28,11 +29,17 @@ pub async fn handle_command(cmd: (String, String), kwargs: Vec<String>, req: Htt
         // Servers
         // _ if WildMatch::new("/servers/*/economy").matches(cmd.as_str()) => economy::economy(ServerType::Survival, &req, &args).await,
 		("POST", "/servers/Survival/economy") => servers::economy(ServerType::Survival, Arc::new(Mutex::new(req)), &args).await,
+		("POST", "/servers/Survival/economy/add") => servers::economy(ServerType::Survival, Arc::new(Mutex::new(req)), &args).await,
         ("GET", "/servers/Survival/economy") => servers::get(ServerType::Survival, &req, &args).await,
 
         // Wallet
 		("GET", "/wallet") => wallet::get(&req, &args).await,
 		("GET", "/wallet/buy") => wallet::buy(&req, &args).await,
+
+        // Tops
+        ("GET", "/tops/user") => tops::get(&req, &args).await,
+        ("POST", "/tops/user") => tops::get(&req, &args).await,
+
 		(&_, &_) => Ok(String::new())
 	}
 }
