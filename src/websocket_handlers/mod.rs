@@ -8,7 +8,6 @@ pub mod public;
 pub mod servers;
 pub mod wallet;
 pub mod calendars;
-pub mod tops;
 
 #[must_use]
 pub async fn handle_command(cmd: (String, String), kwargs: Vec<String>, req: HttpRequest) -> Result<String, ApiError> {
@@ -37,8 +36,8 @@ pub async fn handle_command(cmd: (String, String), kwargs: Vec<String>, req: Htt
 		("GET", "/wallet/buy") => wallet::buy(&req, &args).await,
 
         // Tops
-        ("GET", "/tops/user") => tops::get(&req, &args).await,
-        ("POST", "/tops/user") => tops::get(&req, &args).await,
+        // ("GET", "/tops/user") => tops::get(&req, &args).await,
+        // ("POST", "/tops/user") => tops::get(&req, &args).await,
 
 		(&_, &_) => Ok(String::new())
 	}
