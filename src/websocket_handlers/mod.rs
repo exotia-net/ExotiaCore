@@ -28,7 +28,7 @@ pub async fn handle_command(cmd: (String, String), kwargs: Vec<String>, req: Htt
         // Servers
         // _ if WildMatch::new("/servers/*/economy").matches(cmd.as_str()) => economy::economy(ServerType::Survival, &req, &args).await,
 		("POST", "/servers/Survival/economy") => servers::economy(ServerType::Survival, Arc::new(Mutex::new(req)), &args).await,
-		("POST", "/servers/Survival/economy/add") => servers::economy(ServerType::Survival, Arc::new(Mutex::new(req)), &args).await,
+		("POST", "/servers/Survival/economy/add") => servers::economy_add(ServerType::Survival, Arc::new(Mutex::new(req)), &args).await,
         ("GET", "/servers/Survival/economy") => servers::get(ServerType::Survival, &req, &args).await,
 
         // Wallet

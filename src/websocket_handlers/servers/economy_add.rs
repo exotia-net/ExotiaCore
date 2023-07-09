@@ -38,13 +38,14 @@ pub async fn economy_add(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, 
                 .ok_or(ApiError::NoneValue("SurvivalEconomy User"))?;
 
             let mut server_db: survival_economy::ActiveModel = server_db.into();
-				server_db.balance = Set(
-                    server_db.balance.unwrap() +
+
+            server_db.balance = Set(
+                server_db.balance.unwrap() +
                     args.get(1)
                         .ok_or(ApiError::NoneValue("User balance"))?
-                        .parse::<i32>()?
-                );
-				server_db.update(&*data.conn.lock().await).await?;
+                    .parse::<i32>()?
+            );
+            server_db.update(&*data.conn.lock().await).await?;
         }
     };
     drop(data_guard);
