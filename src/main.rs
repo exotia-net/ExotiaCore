@@ -30,6 +30,7 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         // Servers
         lib::controllers::servers::get::get,
         lib::controllers::servers::economy::economy,
+        lib::controllers::servers::economy_top::economy_top,
 
         // Users
         lib::controllers::users::auth::auth,
@@ -68,6 +69,8 @@ async fn websocket_handler(req: HttpRequest, stream: web::Payload) -> Result<Htt
         // Servers
         schemas(lib::controllers::servers::Economy),
         schemas(lib::controllers::servers::ServerType),
+        schemas(lib::controllers::servers::TopsQuery),
+        schemas(lib::controllers::servers::EconomyTop),
 
         // Wallet
         schemas(lib::controllers::wallet::WalletBuy),
