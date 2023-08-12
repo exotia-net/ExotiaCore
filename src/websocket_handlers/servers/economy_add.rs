@@ -11,7 +11,7 @@ use crate::{controllers::servers::ServerType, entities::{survival_economy, users
     post,
     path = "/servers/{server}/economy/add",
     tag = "Servers (Websocket)",
-    request_body(content = String, description = "POST /servers/{server}/economy {uuid} {balance}", content_type = "text/plain"),
+    request_body(content = String, description = "POST /servers/{server}/economy/add {uuid} {balance}", content_type = "text/plain"),
     responses(
         (status = 200, description = "Succesfully updated economy"),
         (status = 401, description = "You are not authorized to access this resource"),
@@ -30,7 +30,7 @@ pub async fn economy_add(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, 
         .await?
         .ok_or(ApiError::NoneValue("User with uuid"))?;
 
-    match server_type {
+    let balance = match server_type {
         ServerType::Survival => {
             let server_db = user.find_related(survival_economy::Entity)
                 .one(&*data.conn.lock().await)
@@ -38,16 +38,16 @@ pub async fn economy_add(server_type: ServerType, req: Arc<Mutex<HttpRequest>>, 
                 .ok_or(ApiError::NoneValue("SurvivalEconomy User"))?;
 
             let mut server_db: survival_economy::ActiveModel = server_db.into();
+            let balance = server_db.balance.unwrap() +
+                args.get(1)
+                    .ok_or(ApiError::NoneValue("User balance"))?
+                .parse::<i32>()?;
 
-            server_db.balance = Set(
-                server_db.balance.unwrap() +
-                    args.get(1)
-                        .ok_or(ApiError::NoneValue("User balance"))?
-                    .parse::<i32>()?
-            );
+            server_db.balance = Set(balance);
             server_db.update(&*data.conn.lock().await).await?;
+            balance
         }
     };
     drop(data_guard);
-	Ok(String::new())
+	Ok(format!("{}", balance))
 }
