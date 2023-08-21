@@ -14,6 +14,7 @@ use migration::{Expr, Alias};
 use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter};
 use serde::Deserialize;
 use serde_json::json;
+use thiserror::Error;
 use uuid::Uuid;
 
 use once_cell::sync::Lazy;
@@ -31,17 +32,27 @@ pub struct AppState {
     pub exotia_key: Arc<Mutex<Option<ExotiaKey>>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum ApiError {
-    DbError(sea_orm::DbErr),
-    IoError(std::io::Error),
-    UuidError(uuid::Error),
-    SerdeError(serde_json::Error),
-    CraftpingError(craftping::Error),
-    ParseIntError(std::num::ParseIntError),
-    ParseFloatError(std::num::ParseFloatError),
+    #[error("DbError: {0}")]
+    DbError(#[from] sea_orm::DbErr),
+    #[error("IoError: {0}")]
+    IoError(#[from] std::io::Error),
+    #[error("UuidError: {0}")]
+    UuidError(#[from] uuid::Error),
+    #[error("SerdeError: {0}")]
+    SerdeError(#[from] serde_json::Error),
+    #[error("CraftpingError: {0}")]
+    CraftpingError(#[from] craftping::Error),
+    #[error("ParseIntError: {0}")]
+    ParseIntError(#[from] std::num::ParseIntError),
+    #[error("ParseFloatError: {0}")]
+    ParseFloatError(#[from] std::num::ParseFloatError),
+    #[error("Poison Error")]
     PoisonError(),
-    ChronoParseError(chrono::ParseError),
+    #[error("ChronoParseError: {0}")]
+    ChronoParseError(#[from] chrono::ParseError),
+    #[error("{0} returned None")]
     NoneValue(&'static str),
 }
 
@@ -62,106 +73,9 @@ impl ApiError {
     }
 }
 
-impl fmt::Display for ApiError {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-    ) -> fmt::Result {
-        match self {
-            Self::DbError(v) => {
-                warn!("DbError: {:?}", v);
-                write!(f, "DbError")
-            }
-            Self::IoError(v) => {
-                warn!("IoError: {:?}", v);
-                write!(f, "IoError")
-            }
-            Self::UuidError(v) => {
-                warn!("UuidError: {:?}", v);
-                write!(f, "UuidError")
-            }
-            Self::SerdeError(v) => {
-                warn!("SerdeError: {:?}", v);
-                write!(f, "SerdeError")
-            }
-            Self::CraftpingError(v) => {
-                warn!("CraftpingError: {:?}", v);
-                write!(f, "CraftpingError")
-            }
-            Self::ParseIntError(v) => {
-                warn!("ParseIntError: {:?}", v);
-                write!(f, "ParseIntError")
-            }
-            Self::ParseFloatError(v) => {
-                warn!("ParseFloatError: {:?}", v);
-                write!(f, "ParseFloatError")
-            }
-            Self::PoisonError() => {
-                write!(f, "PoisonError")
-            }
-            Self::ChronoParseError(v) => {
-                warn!("ChronoParseError: {:?}", v);
-                write!(f, "ChronoParseError")
-            }
-            Self::NoneValue(v) => {
-                warn!("{:?} returned None", v);
-                write!(f, "Value {v} is None")
-            }
-        }
-    }
-}
-
-impl From<sea_orm::DbErr> for ApiError {
-    fn from(value: sea_orm::DbErr) -> Self {
-        Self::DbError(value)
-    }
-}
-
-impl From<std::io::Error> for ApiError {
-    fn from(value: std::io::Error) -> Self {
-        Self::IoError(value)
-    }
-}
-
-impl From<uuid::Error> for ApiError {
-    fn from(value: uuid::Error) -> Self {
-        Self::UuidError(value)
-    }
-}
-
-impl From<serde_json::Error> for ApiError {
-    fn from(value: serde_json::Error) -> Self {
-        Self::SerdeError(value)
-    }
-}
-
-impl From<craftping::Error> for ApiError {
-    fn from(value: craftping::Error) -> Self {
-        Self::CraftpingError(value)
-    }
-}
-
-impl From<std::num::ParseIntError> for ApiError {
-    fn from(value: std::num::ParseIntError) -> Self {
-        Self::ParseIntError(value)
-    }
-}
-
-impl From<std::num::ParseFloatError> for ApiError {
-    fn from(value: std::num::ParseFloatError) -> Self {
-        Self::ParseFloatError(value)
-    }
-}
-
 impl<T> From<PoisonError<T>> for ApiError {
     fn from(_: PoisonError<T>) -> Self {
         Self::PoisonError()
-    }
-}
-
-impl From<chrono::ParseError> for ApiError {
-    fn from(value: chrono::ParseError) -> Self {
-        Self::ChronoParseError(value)
     }
 }
 
@@ -169,7 +83,7 @@ impl actix_web::error::ResponseError for ApiError {
     fn error_response(&self) -> HttpResponse<body::BoxBody> {
         HttpResponse::build(self.status_code())
             .insert_header(ContentType::json())
-            .json(json!({ "message": self.to_string() }))
+            .json(json!({ "message": *self.to_string() }))
     }
 
     fn status_code(&self) -> StatusCode {
